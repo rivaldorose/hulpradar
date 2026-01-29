@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import type { Database, HelpRequestInsert } from "@/types/database";
 import { findMatches, createMatches } from "@/lib/matching";
 
 // Create admin client for server-side operations
 function getAdminClient() {
-  return createClient<Database>(
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
@@ -53,7 +52,7 @@ export async function POST(request: NextRequest) {
     const supabase = getAdminClient();
 
     // Create the help request
-    const helpRequestData: HelpRequestInsert = {
+    const helpRequestData = {
       name,
       email: email || null,
       phone: phone || null,
@@ -81,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find matching organisations
-    let matchedOrganisations;
+    let matchedOrganisations: Awaited<ReturnType<typeof findMatches>> = [];
     try {
       matchedOrganisations = await findMatches(gemeente, postcode);
     } catch (matchError) {

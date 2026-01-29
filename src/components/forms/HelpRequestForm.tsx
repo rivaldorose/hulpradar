@@ -137,10 +137,10 @@ export function HelpRequestForm({
   };
 
   const contactOptions = [
-    { value: "email", label: "E-mail", icon: Mail },
-    { value: "sms", label: "SMS", icon: Phone },
-    { value: "app", label: "Konsensi App", icon: Smartphone, disabled: !konsensiUserId },
-  ] as const;
+    { value: "email" as const, label: "E-mail", icon: Mail, disabled: false },
+    { value: "sms" as const, label: "SMS", icon: Phone, disabled: false },
+    { value: "app" as const, label: "Konsensi App", icon: Smartphone, disabled: !konsensiUserId },
+  ];
 
   return (
     <Card className="w-full max-w-lg mx-auto">

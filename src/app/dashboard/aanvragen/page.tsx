@@ -40,11 +40,13 @@ export default async function AanvragenPage() {
   }
 
   // Get user's organisation
-  const { data: orgUser } = await supabase
+  const { data: orgUserData } = await supabase
     .from("organisation_users")
     .select("organisation_id")
     .eq("user_id", user.id)
     .single();
+
+  const orgUser = orgUserData as { organisation_id: string } | null;
 
   if (!orgUser) {
     return (

@@ -17,11 +17,22 @@ export default async function DashboardPage() {
   }
 
   // Get user's organisation
-  const { data: orgUser } = await supabase
+  const { data: orgUserData } = await supabase
     .from("organisation_users")
     .select("organisation_id, organisations(*)")
     .eq("user_id", user.id)
     .single();
+
+  const orgUser = orgUserData as {
+    organisation_id: string;
+    organisations: {
+      id: string;
+      name: string;
+      current_capacity: number;
+      max_capacity: number;
+      estimated_wait_days: number;
+    } | null;
+  } | null;
 
   const organisation = orgUser?.organisations as {
     id: string;

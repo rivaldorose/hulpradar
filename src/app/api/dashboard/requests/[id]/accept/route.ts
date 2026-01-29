@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function POST(
   request: NextRequest,
@@ -7,41 +14,25 @@ export async function POST(
 ) {
   try {
     const { id: helpRequestId } = await params;
-    const supabase = await createClient();
-
-    // Check authentication
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
-    }
-
-    // Get user's organisation
-    const { data: orgUser } = await supabase
-      .from("organisation_users")
-      .select("organisation_id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (!orgUser) {
-      return NextResponse.json(
-        { error: "Geen organisatie gevonden" },
-        { status: 403 }
-      );
-    }
+    const supabase = getAdminClient();
 
     // Get the body for optional note
     const body = await request.json().catch(() => ({}));
-    const { note } = body;
+    const { note, organisation_id } = body;
+
+    if (!organisation_id) {
+      return NextResponse.json(
+        { error: "Organisation ID is required" },
+        { status: 400 }
+      );
+    }
 
     // Find the match
     const { data: match, error: matchError } = await supabase
       .from("matches")
       .select("id, status")
       .eq("help_request_id", helpRequestId)
-      .eq("organisation_id", orgUser.organisation_id)
+      .eq("organisation_id", organisation_id)
       .single();
 
     if (matchError || !match) {
@@ -81,22 +72,6 @@ export async function POST(
       .from("help_requests")
       .update({ status: "accepted" })
       .eq("id", helpRequestId);
-
-    // Update organisation capacity
-    await supabase.rpc("increment_capacity", {
-      org_id: orgUser.organisation_id,
-    }).catch(() => {
-      // If RPC doesn't exist, do manual update
-      return supabase
-        .from("organisations")
-        .update({
-          current_capacity: supabase.rpc("coalesce", {
-            value: "current_capacity + 1",
-            default: 1,
-          }),
-        })
-        .eq("id", orgUser.organisation_id);
-    });
 
     // TODO: Create conversation for chat
     // TODO: Send notification to help seeker

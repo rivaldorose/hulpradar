@@ -1,13 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/database";
 
 // Create admin client for server-side operations
 function getAdminClient() {
-  return createClient<Database>(
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+interface MatchWithOrg {
+  id: string;
+  status: string;
+  priority: number;
+  responded_at: string | null;
+  organisation_id: string;
+  organisations: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    website: string | null;
+    gemeente: string;
+    estimated_wait_days: number;
+    is_verified: boolean;
+  } | null;
 }
 
 export async function GET(
@@ -62,18 +79,8 @@ export async function GET(
     }
 
     // Format the response
-    const formattedMatches = (matches || []).map((match) => {
-      // Handle the nested organisation data
-      const org = match.organisations as unknown as {
-        id: string;
-        name: string;
-        email: string;
-        phone: string | null;
-        website: string | null;
-        gemeente: string;
-        estimated_wait_days: number;
-        is_verified: boolean;
-      };
+    const formattedMatches = ((matches || []) as unknown as MatchWithOrg[]).map((match) => {
+      const org = match.organisations;
 
       return {
         id: match.id,

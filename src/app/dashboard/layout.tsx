@@ -25,7 +25,7 @@ export default async function DashboardLayout({
     .single();
 
   const organisationName = orgUser?.organisations
-    ? (orgUser.organisations as { name: string }).name
+    ? (orgUser.organisations as unknown as { name: string })?.name
     : undefined;
 
   return (

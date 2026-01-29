@@ -1,13 +1,26 @@
-import type { Organisation } from "@/types/database";
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/database";
 
 // Create admin client for server-side operations
 function getAdminClient() {
-  return createClient<Database>(
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+interface Organisation {
+  id: string;
+  name: string;
+  slug: string;
+  email: string;
+  gemeente: string;
+  postcode: string | null;
+  current_capacity: number;
+  max_capacity: number;
+  estimated_wait_days: number;
+  nvvk_member: boolean;
+  is_verified: boolean;
+  is_active: boolean;
 }
 
 interface MatchScore {
@@ -61,7 +74,7 @@ export async function findMatches(
   }
 
   // Filter for organisations with capacity
-  let matches = (localMatches || []).filter(
+  let matches = ((localMatches || []) as Organisation[]).filter(
     (org) => org.current_capacity < org.max_capacity
   );
 
@@ -79,7 +92,7 @@ export async function findMatches(
       .eq("is_active", true);
 
     if (!nearbyError && nearbyMatches) {
-      const filteredNearby = nearbyMatches.filter(
+      const filteredNearby = (nearbyMatches as Organisation[]).filter(
         (org) => org.current_capacity < org.max_capacity
       );
       matches = [...matches, ...filteredNearby];
@@ -96,7 +109,7 @@ export async function findMatches(
       .limit(10);
 
     if (!anyError && anyMatches) {
-      matches = anyMatches.filter(
+      matches = (anyMatches as Organisation[]).filter(
         (org) => org.current_capacity < org.max_capacity
       );
     }
@@ -127,7 +140,7 @@ export async function createMatches(
     help_request_id: helpRequestId,
     organisation_id: org.id,
     priority: index + 1, // Priority based on score ranking
-    status: "pending" as const,
+    status: "pending",
     expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(), // 48 hours
   }));
 
