@@ -33,7 +33,7 @@ export function Header() {
             Inloggen
           </Link>
           <Link href="/#zoek-hulp" className="px-6 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/20">
-            Aanmelden
+            Hulp zoeken
           </Link>
         </div>
       </div>
