@@ -13,7 +13,7 @@ export function Header() {
             alt="Konsensi Hulp Radar"
             width={372}
             height={191}
-            className="h-14 w-auto"
+            className="h-16 w-auto"
             priority
           />
         </Link>

@@ -65,10 +65,12 @@ export default function HomePage() {
             {/* Right Column */}
             <div className="w-full lg:w-2/5 relative">
               <div className="relative z-10 rounded-[2rem] overflow-hidden shadow-2xl">
-                <img
+                <Image
                   className="w-full h-[500px] object-cover"
-                  alt="Jongere die opgelucht op smartphone kijkt"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQWLY2fk_D85QkPw432r_or1ftKet5UM92g4w-l0qGZUHlTQlzXZdLZLrZld2MiGFm_GCLyILS0AXOc-edH_bsQDXwRteEw_JdgltQswEOZn0rV_E0gO-nvfPDMG5II8CslvjYJD8e63D3GsRW37zh0M0G-kGDLSYGxWIu7D-jU1Axz4r4lYe8MyADOb8OqlrlTeIHTPwy2RbTuRSI6JY04VKrsU8YhcCwj-AE59yYWhVyikvhBSNJp4Nl3gnZsaIe0iCYO5dK-A"
+                  alt="Illustratie van hulpverlener en jongere met telefoon"
+                  src="/hero-illustratie.jpg"
+                  width={1024}
+                  height={768}
                 />
 
                 {/* Floating Match Card */}
