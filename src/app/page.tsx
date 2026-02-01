@@ -41,7 +41,7 @@ export default function HomePage() {
           <div className="hidden md:flex items-center gap-8">
             <Link href="/hoe-het-werkt" className="text-sm font-semibold hover:text-primary transition-colors">Hoe het werkt</Link>
             <Link href="/over-ons" className="text-sm font-semibold hover:text-primary transition-colors">Over ons</Link>
-            <a href="#hulpverleners" className="text-sm font-semibold hover:text-primary transition-colors">Hulpverleners</a>
+            <Link href="/hulporganisaties" className="text-sm font-semibold hover:text-primary transition-colors">Hulpverleners</Link>
           </div>
 
           <div className="flex items-center gap-3">
@@ -238,7 +238,7 @@ export default function HomePage() {
               <ul className="space-y-4 text-white/60">
                 <li><Link className="hover:text-primary transition-colors" href="/hoe-het-werkt">Hoe het werkt</Link></li>
                 <li><Link className="hover:text-primary transition-colors" href="/over-ons">Over ons</Link></li>
-                <li><a className="hover:text-primary transition-colors" href="#hulpverleners">Hulpverleners</a></li>
+                <li><Link className="hover:text-primary transition-colors" href="/hulporganisaties">Hulpverleners</Link></li>
                 <li><Link className="hover:text-primary transition-colors" href="/faq">Veelgestelde vragen</Link></li>
               </ul>
             </div>
