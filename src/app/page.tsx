@@ -271,8 +271,8 @@ export default function HomePage() {
           <div className="pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-white/40 text-sm">
             <p>&copy; 2025 HulpRadar. Alle rechten voorbehouden.</p>
             <div className="flex gap-8">
-              <a className="hover:text-white" href="#">Privacyverklaring</a>
-              <a className="hover:text-white" href="#">Algemene voorwaarden</a>
+              <Link className="hover:text-white" href="/privacy-policy">Privacyverklaring</Link>
+              <Link className="hover:text-white" href="/algemene-voorwaarden">Algemene voorwaarden</Link>
               <a className="hover:text-white" href="#">Cookies</a>
             </div>
           </div>
