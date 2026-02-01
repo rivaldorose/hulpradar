@@ -124,11 +124,8 @@ export async function POST(request: NextRequest) {
           if (org.email) {
             sendNewRequestToOrganisation(org.email, {
               organisationName: org.name,
-              helpSeekerName: name || "Anoniem",
               gemeente,
-              situation: situation || "",
               helpRequestId: helpRequest.id,
-              priority: i + 1,
               expiresInHours: 48,
             }).catch((err) =>
               console.error(`Failed to send notification to ${org.name}:`, err)

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendAcceptedEmail } from "@/lib/email";
+import { sendAcceptedToOrganisation, sendAcceptedToSeeker } from "@/lib/email";
 
 function getAdminClient() {
   return createClient(
@@ -74,30 +74,39 @@ export async function POST(
       .update({ status: "accepted" })
       .eq("id", helpRequestId);
 
-    // Get help request and organisation details for email
+    // Get help request and organisation details for emails
     const { data: helpRequest } = await supabase
       .from("help_requests")
-      .select("name, email")
+      .select("name, email, phone, gemeente, situation")
       .eq("id", helpRequestId)
       .single();
 
     const { data: organisation } = await supabase
       .from("organisations")
-      .select("name, email, phone, gemeente")
+      .select("name, email")
       .eq("id", organisation_id)
       .single();
 
-    // Send acceptance email to help seeker
+    // Email 4: Contactgegevens hulpzoekende → organisatie
+    if (organisation?.email && helpRequest) {
+      sendAcceptedToOrganisation(organisation.email, {
+        organisationName: organisation.name,
+        helpSeekerName: helpRequest.name || "Anoniem",
+        helpSeekerEmail: helpRequest.email || "",
+        helpSeekerPhone: helpRequest.phone,
+        gemeente: helpRequest.gemeente,
+        situation: helpRequest.situation,
+        helpRequestId,
+      }).catch((err) => console.error("Failed to send acceptance to org:", err));
+    }
+
+    // Email 5: "Ze nemen contact op" → hulpzoekende
     if (helpRequest?.email && organisation) {
-      sendAcceptedEmail(helpRequest.email, {
+      sendAcceptedToSeeker(helpRequest.email, {
         name: helpRequest.name || "Anoniem",
         organisationName: organisation.name,
-        organisationEmail: organisation.email,
-        organisationPhone: organisation.phone,
-        organisationGemeente: organisation.gemeente,
         helpRequestId,
-        note: note || null,
-      }).catch((err) => console.error("Failed to send acceptance email:", err));
+      }).catch((err) => console.error("Failed to send acceptance to seeker:", err));
     }
 
     return NextResponse.json({
