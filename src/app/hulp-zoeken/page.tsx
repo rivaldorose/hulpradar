@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 
@@ -308,8 +308,8 @@ interface FormData {
   phone: string;
 }
 
-// ──────────────── Main Page ────────────────
-export default function HulpZoekenPage() {
+// ──────────────── Inner Content ────────────────
+function HulpZoekenContent() {
   const searchParams = useSearchParams();
   const initialWoonplaats = searchParams.get("woonplaats") || "";
   const [step, setStep] = useState(1);
@@ -324,8 +324,7 @@ export default function HulpZoekenPage() {
   };
 
   return (
-    <div className="bg-background-light min-h-screen flex flex-col">
-      <Header />
+    <>
       <div className="pt-24 flex-1 flex flex-col">
         {step === 1 && <StepForm onSubmit={handleFormSubmit} initialWoonplaats={initialWoonplaats} />}
         {step === 2 && <StepRadar onComplete={handleRadarComplete} />}
@@ -336,6 +335,22 @@ export default function HulpZoekenPage() {
       <footer className="py-8 text-center text-gray-400 text-sm border-t border-gray-100">
         <p>&copy; 2025 HulpRadar. Wij helpen je weer op weg.</p>
       </footer>
+    </>
+  );
+}
+
+// ──────────────── Main Page ────────────────
+export default function HulpZoekenPage() {
+  return (
+    <div className="bg-background-light min-h-screen flex flex-col">
+      <Header />
+      <Suspense fallback={
+        <div className="pt-24 flex-1 flex items-center justify-center">
+          <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+        </div>
+      }>
+        <HulpZoekenContent />
+      </Suspense>
     </div>
   );
 }

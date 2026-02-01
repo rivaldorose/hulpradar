@@ -579,11 +579,19 @@ export default function AanmeldenPage() {
     try {
       const supabase = createClient();
 
+      // Create a slug from organisation name
+      const slug = stepOneData.organisatienaam
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
       // Create the organisation in Supabase
       const { data: org, error: orgError } = await supabase
         .from("organisations")
         .insert({
           name: stepOneData.organisatienaam,
+          slug,
+          email: data.email,
           kvk_number: stepOneData.kvkNummer,
           website: stepOneData.website ? `https://${stepOneData.website}` : null,
           specialisaties: stepTwoData.specialisaties,

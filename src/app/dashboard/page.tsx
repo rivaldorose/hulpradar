@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .single();
 
-  const organisation = orgUserData?.organisations as {
+  const organisation = orgUserData?.organisations as unknown as {
     id: string;
     name: string;
     current_capacity: number;
