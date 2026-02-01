@@ -6,8 +6,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-manrope);
+  --font-heading: var(--font-poppins);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,6 +40,9 @@
   --color-card: var(--card);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-forest-green: #1B5E20;
+  --color-background-light: #f7f8f6;
+  --color-background-dark: #192210;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -46,76 +50,105 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --shadow-soft-green: 0 20px 40px -10px rgba(124, 179, 66, 0.12);
 }
 
-/* Konsensi Dark Theme - Default */
+/* HulpRadar Light Theme */
 :root {
-  --radius: 0.625rem;
+  --radius: 1rem;
 
-  /* Konsensi Colors */
+  --background: #f7f8f6;
+  --foreground: #141811;
+  --card: #ffffff;
+  --card-foreground: #141811;
+  --popover: #ffffff;
+  --popover-foreground: #141811;
+
+  /* Primary - HulpRadar Green */
+  --primary: #80ec13;
+  --primary-foreground: #141811;
+
+  --secondary: #f2f4f0;
+  --secondary-foreground: #141811;
+
+  --muted: #f2f4f0;
+  --muted-foreground: #758961;
+
+  --accent: #80ec13;
+  --accent-foreground: #141811;
+
+  --destructive: #EF4444;
+  --success: #22C55E;
+  --warning: #F59E0B;
+
+  --border: #e5e7e3;
+  --input: #e5e7e3;
+  --ring: #80ec13;
+
+  --chart-1: #80ec13;
+  --chart-2: #22C55E;
+  --chart-3: #3B82F6;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #141811;
+  --sidebar-primary: #80ec13;
+  --sidebar-primary-foreground: #141811;
+  --sidebar-accent: #f2f4f0;
+  --sidebar-accent-foreground: #141811;
+  --sidebar-border: #e5e7e3;
+  --sidebar-ring: #80ec13;
+}
+
+/* Dark mode */
+.dark {
+  --background: #192210;
+  --foreground: #ffffff;
+  --card: #1e2716;
+  --card-foreground: #ffffff;
+  --popover: #1e2716;
+  --popover-foreground: #ffffff;
+  --primary: #80ec13;
+  --primary-foreground: #141811;
+  --secondary: #252e1b;
+  --secondary-foreground: #ffffff;
+  --muted: #252e1b;
+  --muted-foreground: #9ca38e;
+  --accent: #80ec13;
+  --accent-foreground: #141811;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #80ec13;
+  --sidebar: #1e2716;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #80ec13;
+  --sidebar-primary-foreground: #141811;
+  --sidebar-accent: #252e1b;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #80ec13;
+}
+
+/* Dashboard dark mode override */
+.dashboard-dark {
   --background: #0F172A;
   --foreground: #FFFFFF;
   --card: #1E293B;
   --card-foreground: #FFFFFF;
   --popover: #1E293B;
   --popover-foreground: #FFFFFF;
-
-  /* Accent - Konsensi Green */
   --primary: #B2FF78;
   --primary-foreground: #0F172A;
-
   --secondary: #334155;
   --secondary-foreground: #FFFFFF;
-
   --muted: #1E293B;
   --muted-foreground: #94A3B8;
-
   --accent: #B2FF78;
   --accent-foreground: #0F172A;
-
-  --destructive: #EF4444;
-  --success: #22C55E;
-  --warning: #F59E0B;
-
   --border: #334155;
   --input: #334155;
   --ring: #B2FF78;
-
-  --chart-1: #B2FF78;
-  --chart-2: #22C55E;
-  --chart-3: #3B82F6;
-  --chart-4: #F59E0B;
-  --chart-5: #EF4444;
-
-  --sidebar: #1E293B;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #B2FF78;
-  --sidebar-primary-foreground: #0F172A;
-  --sidebar-accent: #334155;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #334155;
-  --sidebar-ring: #B2FF78;
-}
-
-/* Light mode override if needed */
-.light {
-  --background: #FFFFFF;
-  --foreground: #0F172A;
-  --card: #F8FAFC;
-  --card-foreground: #0F172A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #16A34A;
-  --primary-foreground: #FFFFFF;
-  --secondary: #F1F5F9;
-  --secondary-foreground: #0F172A;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --accent: #16A34A;
-  --accent-foreground: #FFFFFF;
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #16A34A;
 }
 
 @layer base {
@@ -127,22 +160,44 @@
   }
 }
 
-/* Custom scrollbar for dark theme */
+/* Glass Navigation */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.dark .glass-nav {
+  background: rgba(25, 34, 16, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Font utilities */
+.font-display {
+  font-family: var(--font-manrope), sans-serif;
+}
+.font-heading {
+  font-family: var(--font-poppins), sans-serif;
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #1E293B;
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #c0c4bc;
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
+  background: #9ca38e;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
 
@@ -175,4 +230,17 @@
 
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease-out forwards;
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
 }
