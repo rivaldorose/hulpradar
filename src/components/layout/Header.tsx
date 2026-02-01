@@ -23,7 +23,7 @@ export function Header() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          <a href="/#hoe-het-werkt" className="text-sm font-semibold hover:text-primary transition-colors">Hoe het werkt</a>
+          <Link href="/hoe-het-werkt" className="text-sm font-semibold hover:text-primary transition-colors">Hoe het werkt</Link>
           <Link href="/over-ons" className="text-sm font-semibold hover:text-primary transition-colors">Over ons</Link>
           <a href="/#hulpverleners" className="text-sm font-semibold hover:text-primary transition-colors">Hulpverleners</a>
         </div>
