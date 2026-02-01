@@ -6,14 +6,14 @@ import Image from "next/image";
 export function Header() {
   return (
     <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-[1200px]">
-      <div className="glass-nav rounded-full px-8 py-3 flex items-center justify-between shadow-soft-green">
-        <Link href="/" className="flex items-center gap-2">
+      <div className="glass-nav rounded-full px-8 py-4 flex items-center justify-between shadow-soft-green">
+        <Link href="/" className="flex items-center">
           <Image
             src="/logo-hulpradar.png"
             alt="Konsensi Hulp Radar"
-            width={160}
-            height={40}
-            className="h-9 w-auto"
+            width={484}
+            height={484}
+            className="h-12 w-auto object-contain"
             priority
           />
         </Link>
