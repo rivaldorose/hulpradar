@@ -14,9 +14,9 @@ import {
 import * as React from "react";
 
 /**
- * Email 5: Acceptatie-notificatie → Hulpzoekende
- * Simpele melding: "Een organisatie gaat contact met je opnemen."
- * Geen contactgegevens van de organisatie — zij bellen/mailen zelf.
+ * Email 5: "Organisatie Gaat Helpen" → Hulpzoekende
+ * Reassuring notification: an organisation accepted and will contact them.
+ * Uses hero image + match badge + reassurance cards.
  */
 interface AcceptedSeekerEmailProps {
   name?: string;
@@ -43,48 +43,79 @@ export default function AcceptedSeekerEmail({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
+            <table cellPadding="0" cellSpacing="0" style={{ width: "100%" }}>
+              <tr>
+                <td>
+                  <Img
+                    src={`${appUrl}/logo-hulpradar.png`}
+                    alt="HulpRadar"
+                    width="140"
+                    height="auto"
+                    style={{ display: "block" }}
+                  />
+                </td>
+                <td style={{ textAlign: "right" as const, verticalAlign: "middle" as const }}>
+                  <span style={activeBadge}>
+                    <span style={activeDot}>●</span> Active
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </Section>
+
+          {/* Hero Image */}
+          <Section style={heroSection}>
             <Img
-              src={`${appUrl}/logo-hulpradar.png`}
-              alt="HulpRadar"
-              width="140"
-              height="auto"
-              style={{ display: "block" }}
+              src={`${appUrl}/budget-overzicht.jpg`}
+              alt="HulpRadar — Er is een match gevonden"
+              width="600"
+              style={{ display: "block", width: "100%", borderRadius: "0" }}
             />
           </Section>
 
           {/* Content */}
           <Section style={content}>
-            {/* Icon */}
-            <div style={iconBadge}>
-              <Text style={iconText}>🎉</Text>
+            {/* Match badge */}
+            <div style={badgeCenter}>
+              <span style={matchBadge}>Match Gevonden</span>
             </div>
 
             <Heading style={h1}>Goed nieuws, {name}!</Heading>
-
-            <Section style={messageBody}>
-              <Text style={paragraph}>
-                Een hulporganisatie heeft je aanvraag geaccepteerd en gaat
-                binnenkort contact met je opnemen.
-              </Text>
-            </Section>
+            <Text style={paragraph}>
+              Een hulporganisatie heeft je aanvraag geaccepteerd en gaat binnenkort
+              contact met je opnemen.
+            </Text>
 
             {/* Organisation card */}
             <Section style={orgCard}>
               <Text style={orgCardLabel}>Organisatie</Text>
               <Text style={orgCardName}>{organisationName}</Text>
               <Text style={orgCardNote}>
-                Zij nemen zo snel mogelijk contact met je op via de
-                contactgegevens die je hebt opgegeven.
+                Zij nemen zo snel mogelijk contact met je op via de contactgegevens
+                die je hebt opgegeven.
               </Text>
             </Section>
 
-            {/* What to expect */}
-            <Section style={expectCard}>
-              <Text style={expectTitle}>Wat kun je verwachten?</Text>
-              <Text style={expectItem}>✓ De organisatie belt of mailt je binnenkort</Text>
-              <Text style={expectItem}>✓ Houd je telefoon en inbox in de gaten</Text>
-              <Text style={expectItem}>✓ Neem gerust contact op als je vragen hebt</Text>
-            </Section>
+            {/* Reassurance cards */}
+            <table cellPadding="0" cellSpacing="0" style={{ width: "100%", marginBottom: "28px" }}>
+              <tr>
+                <td style={reassuranceCard}>
+                  <Text style={reassuranceIcon}>⏰</Text>
+                  <Text style={reassuranceTitle}>Binnen 48 uur</Text>
+                  <Text style={reassuranceDesc}>
+                    De organisatie neemt binnen 48 uur contact met je op
+                  </Text>
+                </td>
+                <td style={{ width: "12px" }} />
+                <td style={reassuranceCard}>
+                  <Text style={reassuranceIcon}>💬</Text>
+                  <Text style={reassuranceTitle}>Rustig afwachten</Text>
+                  <Text style={reassuranceDesc}>
+                    Je hoeft zelf niets te doen, zij bellen of mailen jou
+                  </Text>
+                </td>
+              </tr>
+            </table>
 
             {/* CTA */}
             <Section style={ctaSection}>
@@ -92,20 +123,32 @@ export default function AcceptedSeekerEmail({
                 Bekijk je status
               </Button>
             </Section>
+
+            <Text style={mutedCenter}>
+              Houd je telefoon en e-mail in de gaten — ze nemen snel contact op.
+            </Text>
           </Section>
 
           {/* Footer */}
           <Section style={footer}>
+            <Img
+              src={`${appUrl}/logo-hulpradar.png`}
+              alt="HulpRadar"
+              width="100"
+              height="auto"
+              style={{ display: "block", margin: "0 auto 16px" }}
+            />
             <Text style={footerNote}>
-              U ontvangt deze e-mail omdat u een hulpvraag heeft ingediend via
-              het HulpRadar platform.
+              Je ontvangt deze e-mail omdat je een hulpvraag hebt ingediend via HulpRadar.
             </Text>
-
             <Section style={footerLinks}>
               <Link href={appUrl} style={footerLink}>HulpRadar.nl</Link>
-              <Text style={footerDot}> • </Text>
+              <Text style={footerDot}> · </Text>
               <Link href={`${appUrl}/privacy-policy`} style={footerLink}>Privacy Policy</Link>
             </Section>
+            <Text style={footerCopy}>
+              © {new Date().getFullYear()} Konsensi Budgetbeheer · Alle rechten voorbehouden
+            </Text>
           </Section>
         </Container>
       </Body>
@@ -130,153 +173,192 @@ const container: React.CSSProperties = {
 };
 
 const header: React.CSSProperties = {
+  padding: "20px 32px",
   borderBottom: "1px solid #f2f4f0",
-  padding: "24px 32px",
+};
+
+const activeBadge: React.CSSProperties = {
+  display: "inline-block",
+  backgroundColor: "rgba(140, 232, 48, 0.15)",
+  color: "#4a7c10",
+  fontSize: "12px",
+  fontWeight: 700,
+  padding: "6px 14px",
+  borderRadius: "9999px",
+  letterSpacing: "0.02em",
+};
+
+const activeDot: React.CSSProperties = {
+  color: "#8ce830",
+  marginRight: "4px",
+  fontSize: "10px",
+};
+
+const heroSection: React.CSSProperties = {
+  padding: "0",
 };
 
 const content: React.CSSProperties = {
-  padding: "40px 32px 48px",
+  padding: "32px 32px 28px",
 };
 
-const iconBadge: React.CSSProperties = {
+const badgeCenter: React.CSSProperties = {
   textAlign: "center" as const,
-  marginBottom: "24px",
+  marginBottom: "16px",
 };
 
-const iconText: React.CSSProperties = {
+const matchBadge: React.CSSProperties = {
   display: "inline-block",
-  backgroundColor: "rgba(128, 236, 19, 0.2)",
+  backgroundColor: "rgba(140, 232, 48, 0.15)",
+  color: "#4a7c10",
+  fontSize: "13px",
+  fontWeight: 700,
+  padding: "8px 20px",
   borderRadius: "9999px",
-  width: "56px",
-  height: "56px",
-  lineHeight: "56px",
-  fontSize: "28px",
-  margin: "0",
-  textAlign: "center" as const,
+  letterSpacing: "0.02em",
 };
 
 const h1: React.CSSProperties = {
-  color: "#141811",
+  color: "#192111",
   fontSize: "28px",
-  fontWeight: 700,
+  fontWeight: 800,
   lineHeight: "1.3",
   textAlign: "center" as const,
-  margin: "0 0 16px",
-  letterSpacing: "-0.01em",
-};
-
-const messageBody: React.CSSProperties = {
-  paddingTop: "16px",
+  margin: "0 0 12px",
+  letterSpacing: "-0.02em",
 };
 
 const paragraph: React.CSSProperties = {
-  color: "#141811",
+  color: "rgba(25, 33, 17, 0.7)",
   fontSize: "16px",
   fontWeight: 400,
   lineHeight: "1.6",
-  margin: "0 0 16px",
+  margin: "0 0 24px",
   textAlign: "center" as const,
 };
 
 const orgCard: React.CSSProperties = {
-  backgroundColor: "rgba(128, 236, 19, 0.08)",
-  border: "1px solid rgba(128, 236, 19, 0.2)",
+  backgroundColor: "rgba(140, 232, 48, 0.08)",
+  border: "1px solid rgba(140, 232, 48, 0.2)",
   borderRadius: "12px",
   padding: "24px",
-  margin: "24px 0",
+  marginBottom: "20px",
   textAlign: "center" as const,
 };
 
 const orgCardLabel: React.CSSProperties = {
-  color: "rgba(20, 24, 17, 0.5)",
-  fontSize: "12px",
-  fontWeight: 600,
+  color: "rgba(25, 33, 17, 0.45)",
+  fontSize: "11px",
+  fontWeight: 700,
   textTransform: "uppercase" as const,
-  letterSpacing: "0.05em",
-  margin: "0 0 4px",
+  letterSpacing: "0.06em",
+  margin: "0 0 6px",
 };
 
 const orgCardName: React.CSSProperties = {
-  color: "#141811",
+  color: "#192111",
   fontSize: "22px",
-  fontWeight: 700,
-  margin: "0 0 12px",
+  fontWeight: 800,
+  margin: "0 0 10px",
 };
 
 const orgCardNote: React.CSSProperties = {
-  color: "rgba(20, 24, 17, 0.6)",
+  color: "rgba(25, 33, 17, 0.55)",
   fontSize: "14px",
   lineHeight: "1.5",
   margin: "0",
 };
 
-const expectCard: React.CSSProperties = {
+const reassuranceCard: React.CSSProperties = {
   backgroundColor: "#f7f8f6",
   border: "1px solid #e2e4e0",
   borderRadius: "12px",
-  padding: "20px 24px",
-  marginBottom: "24px",
+  padding: "20px 16px",
+  textAlign: "center" as const,
+  verticalAlign: "top" as const,
+  width: "50%",
 };
 
-const expectTitle: React.CSSProperties = {
-  color: "#141811",
+const reassuranceIcon: React.CSSProperties = {
+  fontSize: "24px",
+  margin: "0 0 8px",
+};
+
+const reassuranceTitle: React.CSSProperties = {
+  color: "#192111",
   fontSize: "14px",
   fontWeight: 700,
-  margin: "0 0 12px",
+  margin: "0 0 6px",
 };
 
-const expectItem: React.CSSProperties = {
-  color: "#141811",
-  fontSize: "14px",
-  fontWeight: 400,
-  margin: "0 0 6px",
-  lineHeight: "1.6",
+const reassuranceDesc: React.CSSProperties = {
+  color: "rgba(25, 33, 17, 0.55)",
+  fontSize: "12px",
+  lineHeight: "1.5",
+  margin: "0",
 };
 
 const ctaSection: React.CSSProperties = {
   textAlign: "center" as const,
-  padding: "8px 0",
+  marginBottom: "12px",
 };
 
 const primaryButton: React.CSSProperties = {
-  backgroundColor: "#80ec13",
-  color: "#141811",
-  padding: "16px 40px",
+  backgroundColor: "#8ce830",
+  color: "#192111",
+  padding: "16px 48px",
   borderRadius: "9999px",
-  fontWeight: 700,
-  fontSize: "18px",
+  fontWeight: 800,
+  fontSize: "16px",
   textDecoration: "none",
   display: "inline-block",
   letterSpacing: "0.01em",
 };
 
+const mutedCenter: React.CSSProperties = {
+  color: "rgba(25, 33, 17, 0.4)",
+  fontSize: "13px",
+  textAlign: "center" as const,
+  margin: "0",
+  lineHeight: "1.5",
+};
+
 const footer: React.CSSProperties = {
-  backgroundColor: "rgba(247, 248, 246, 0.5)",
-  borderTop: "1px solid #f2f4f0",
+  backgroundColor: "#f7f8f6",
+  borderTop: "1px solid #e8eae5",
   padding: "32px",
+  textAlign: "center" as const,
 };
 
 const footerNote: React.CSSProperties = {
-  color: "rgba(20, 24, 17, 0.5)",
+  color: "rgba(25, 33, 17, 0.45)",
   fontSize: "12px",
-  textAlign: "center" as const,
   margin: "0 0 12px",
+  textAlign: "center" as const,
 };
 
 const footerLinks: React.CSSProperties = {
   textAlign: "center" as const,
+  marginBottom: "12px",
 };
 
 const footerLink: React.CSSProperties = {
-  color: "rgba(20, 24, 17, 0.4)",
+  color: "rgba(25, 33, 17, 0.4)",
   fontSize: "12px",
   fontWeight: 600,
   textDecoration: "none",
 };
 
 const footerDot: React.CSSProperties = {
-  color: "rgba(20, 24, 17, 0.4)",
+  color: "rgba(25, 33, 17, 0.3)",
   fontSize: "12px",
   display: "inline",
   margin: "0",
+};
+
+const footerCopy: React.CSSProperties = {
+  color: "rgba(25, 33, 17, 0.3)",
+  fontSize: "11px",
+  margin: "0",
+  textAlign: "center" as const,
 };

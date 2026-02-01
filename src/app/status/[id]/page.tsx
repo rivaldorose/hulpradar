@@ -2,23 +2,9 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Radar,
-  CheckCircle,
-  Clock,
-  XCircle,
-  Building2,
-  Mail,
-  Phone,
-  ExternalLink,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
 
 interface Match {
   id: string;
@@ -31,6 +17,7 @@ interface Match {
     gemeente: string;
     estimated_wait_days: number;
     is_verified: boolean;
+    specialisaties?: string[];
   };
   responded_at: string | null;
 }
@@ -43,23 +30,6 @@ interface HelpRequestStatus {
   created_at: string;
   matches: Match[];
 }
-
-const statusLabels: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: "Wacht op matches", color: "bg-yellow-500/10 text-yellow-500", icon: Clock },
-  matching: { label: "Zoekt matches...", color: "bg-blue-500/10 text-blue-500", icon: Radar },
-  matched: { label: "Matches gevonden", color: "bg-primary/10 text-primary", icon: CheckCircle },
-  accepted: { label: "Geaccepteerd", color: "bg-green-500/10 text-green-500", icon: CheckCircle },
-  in_progress: { label: "In behandeling", color: "bg-blue-500/10 text-blue-500", icon: Clock },
-  completed: { label: "Afgerond", color: "bg-green-500/10 text-green-500", icon: CheckCircle },
-  cancelled: { label: "Geannuleerd", color: "bg-red-500/10 text-red-500", icon: XCircle },
-};
-
-const matchStatusLabels: Record<string, { label: string; color: string }> = {
-  pending: { label: "Wacht op reactie", color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
-  accepted: { label: "Geaccepteerd", color: "bg-green-500/10 text-green-500 border-green-500/20" },
-  rejected: { label: "Afgewezen", color: "bg-red-500/10 text-red-500 border-red-500/20" },
-  expired: { label: "Verlopen", color: "bg-muted text-muted-foreground border-border" },
-};
 
 export default function StatusPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -84,8 +54,7 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
       const data = await response.json();
       setStatus(data);
       setError(null);
-    } catch (err) {
-      console.error("Error fetching status:", err);
+    } catch {
       setError("Er ging iets mis bij het ophalen van de status");
     } finally {
       setLoading(false);
@@ -94,195 +63,341 @@ export default function StatusPage({ params }: { params: Promise<{ id: string }>
 
   useEffect(() => {
     fetchStatus();
-
-    // Poll for updates every 30 seconds
     const interval = setInterval(fetchStatus, 30000);
     return () => clearInterval(interval);
   }, [resolvedParams.id]);
 
-  const currentStatus = status ? statusLabels[status.status] || statusLabels.pending : statusLabels.pending;
-  const StatusIcon = currentStatus.icon;
+  // Check if any match is accepted → show dossier view
+  const acceptedMatch = status?.matches.find((m) => m.status === "accepted");
+  const pendingMatches = status?.matches.filter((m) => m.status === "pending") || [];
+  const hasMatches = (status?.matches.length || 0) > 0;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#FAFDF7]">
       <Header />
 
-      <main className="flex-1 py-12">
-        <div className="container max-w-screen-md mx-auto px-4">
-          {loading && !status ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-              <p className="text-muted-foreground">Status ophalen...</p>
-            </div>
-          ) : error ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-                <h2 className="text-xl font-semibold mb-2">{error}</h2>
-                <p className="text-muted-foreground mb-6">
-                  Controleer of je de juiste link hebt gebruikt.
-                </p>
-                <Link href="/">
-                  <Button>Terug naar home</Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : status ? (
-            <div className="space-y-6">
-              {/* Status Header */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-2xl mb-2">
-                        Hoi {status.name}!
-                      </CardTitle>
-                      <CardDescription>
-                        Aanvraag voor hulp in {status.gemeente}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={fetchStatus}
-                      disabled={loading}
-                    >
-                      <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-                      Vernieuwen
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-card border border-border">
-                    <div className={`p-3 rounded-full ${currentStatus.color}`}>
-                      <StatusIcon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">{currentStatus.label}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Aangemaakt op {new Date(status.created_at).toLocaleDateString("nl-NL", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Loading State */}
+      {loading && !status && (
+        <main className="flex-1 flex items-center justify-center pt-32 pb-20">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-[#8ce830] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-[#1B3022]/60 font-medium">Status ophalen...</p>
+          </div>
+        </main>
+      )}
 
-              {/* Matches */}
-              <div>
-                <h2 className="text-lg font-semibold mb-4">
-                  Gevonden organisaties ({status.matches.length})
-                </h2>
-
-                {status.matches.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-8 text-center">
-                      <Radar className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-                      <p className="text-muted-foreground">
-                        We zijn nog op zoek naar organisaties in jouw regio...
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-4">
-                    {status.matches.map((match) => {
-                      const matchStatus = matchStatusLabels[match.status];
-                      return (
-                        <Card key={match.id} className={match.status === "accepted" ? "border-green-500/50" : ""}>
-                          <CardContent className="p-6">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                  <Building2 className="h-6 w-6 text-primary" />
-                                </div>
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-semibold">{match.organisation.name}</h3>
-                                    {match.organisation.is_verified && (
-                                      <Badge variant="secondary" className="text-xs">
-                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                        Geverifieerd
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground mb-3">
-                                    {match.organisation.gemeente} • Geschatte wachttijd: {match.organisation.estimated_wait_days} dagen
-                                  </p>
-
-                                  {match.status === "accepted" && (
-                                    <div className="space-y-2 text-sm">
-                                      <a
-                                        href={`mailto:${match.organisation.email}`}
-                                        className="flex items-center gap-2 text-primary hover:underline"
-                                      >
-                                        <Mail className="h-4 w-4" />
-                                        {match.organisation.email}
-                                      </a>
-                                      {match.organisation.phone && (
-                                        <a
-                                          href={`tel:${match.organisation.phone}`}
-                                          className="flex items-center gap-2 text-primary hover:underline"
-                                        >
-                                          <Phone className="h-4 w-4" />
-                                          {match.organisation.phone}
-                                        </a>
-                                      )}
-                                      {match.organisation.website && (
-                                        <a
-                                          href={match.organisation.website}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="flex items-center gap-2 text-primary hover:underline"
-                                        >
-                                          <ExternalLink className="h-4 w-4" />
-                                          Website bezoeken
-                                        </a>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <Badge className={matchStatus.color}>
-                                {matchStatus.label}
-                              </Badge>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                )}
+      {/* Error State */}
+      {error && (
+        <main className="flex-1 pt-32 pb-20 px-6">
+          <div className="max-w-lg mx-auto text-center">
+            <div className="bg-white rounded-3xl p-12 shadow-lg border border-red-100">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="material-symbols-outlined text-red-500 text-3xl">error</span>
               </div>
-
-              {/* Info Box */}
-              <Card className="bg-primary/5 border-primary/20">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold mb-2">Wat gebeurt er nu?</h3>
-                  <ul className="text-sm text-muted-foreground space-y-2">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      Organisaties hebben 48 uur om te reageren op je aanvraag.
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      Je ontvangt een bericht zodra een organisatie je aanvraag accepteert.
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      Bij acceptatie krijg je de contactgegevens om direct in contact te komen.
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+              <h2 className="font-display text-2xl font-bold text-[#1B3022] mb-3">{error}</h2>
+              <p className="text-[#1B3022]/60 mb-8">Controleer of je de juiste link hebt gebruikt.</p>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 bg-[#8ce830] hover:bg-[#76c428] text-[#1B3022] font-bold px-8 py-3 rounded-full transition-all"
+              >
+                Terug naar home
+              </Link>
             </div>
-          ) : null}
-        </div>
-      </main>
+          </div>
+        </main>
+      )}
+
+      {/* Accepted State: Dossier View */}
+      {status && acceptedMatch && (
+        <>
+          <header className="pt-32 pb-16 px-6 text-center max-w-4xl mx-auto">
+            <h1 className="font-display font-bold text-4xl md:text-5xl text-[#1B5E20] mb-4">
+              Jouw pad naar een oplossing
+            </h1>
+            <p className="text-lg text-[#1B3022]/60 max-w-xl mx-auto">
+              Hier kun je de status van je hulpvraag volgen en je matches bekijken. We staan aan je zijde.
+            </p>
+          </header>
+
+          <main className="flex-grow px-6 pb-32">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(27,94,32,0.08)] overflow-hidden">
+                {/* Progress Steps */}
+                <div className="p-8 md:p-12 border-b border-gray-50">
+                  <div className="flex items-center justify-between mb-8">
+                    {/* Step 1: Completed */}
+                    <div className="flex flex-col items-center gap-3 relative z-10">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1B5E20]">
+                        <span className="material-symbols-outlined text-white text-sm">check</span>
+                      </div>
+                      <span className="text-xs font-bold text-[#1B5E20] text-center">Hulpvraag<br />ingediend</span>
+                    </div>
+                    <div className="flex-1 h-0.5 bg-[#1B5E20] -mt-8" />
+                    {/* Step 2: Completed */}
+                    <div className="flex flex-col items-center gap-3 relative z-10">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#1B5E20]">
+                        <span className="material-symbols-outlined text-white text-sm">check</span>
+                      </div>
+                      <span className="text-xs font-bold text-[#1B5E20] text-center">Matches<br />gevonden</span>
+                    </div>
+                    <div className="flex-1 h-0.5 bg-[#1B5E20] -mt-8" />
+                    {/* Step 3: Active */}
+                    <div className="flex flex-col items-center gap-3 relative z-10">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#8ce830] ring-4 ring-green-100">
+                        <div className="w-3 h-3 rounded-full bg-[#1B5E20] animate-pulse" />
+                      </div>
+                      <span className="text-xs font-bold text-[#1B5E20] text-center">Hulp<br />gestart</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 rounded-xl p-4 flex items-center gap-3">
+                    <span className="material-symbols-outlined text-[#1B5E20]">info</span>
+                    <p className="text-sm text-[#1B5E20] font-medium">
+                      Je bent momenteel in de fase &apos;Hulp gestart&apos;. De organisatie heeft je dossier geopend.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Organisation Info */}
+                <div className="p-8 md:p-12 bg-[#FBFEF9]">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-6">Deelnemende Organisatie</h3>
+                  <div className="flex flex-col md:flex-row gap-8 items-start">
+                    <div className="relative">
+                      <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white shadow-md bg-[#8ce830]/10 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[#1B5E20] text-4xl">corporate_fare</span>
+                      </div>
+                      {acceptedMatch.organisation.is_verified && (
+                        <div className="absolute -bottom-2 -right-2 bg-[#8ce830] text-[#1B5E20] w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                          <span className="material-symbols-outlined text-lg">verified</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex flex-wrap items-center gap-3 mb-2">
+                        <h4 className="text-2xl font-bold text-[#1B5E20]">{acceptedMatch.organisation.name}</h4>
+                        {acceptedMatch.organisation.is_verified && (
+                          <span className="px-3 py-1 bg-[#1B5E20] text-white text-[10px] font-bold rounded-full uppercase">
+                            Konsensi Geverifieerd
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-600 mb-4 max-w-lg">
+                        Gespecialiseerd in hulpverlening en persoonlijke begeleiding in {acceptedMatch.organisation.gemeente}.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {acceptedMatch.organisation.phone && (
+                          <div className="flex items-center gap-3 text-sm text-gray-500">
+                            <span className="material-symbols-outlined text-[#1B5E20] text-xl">call</span>
+                            <span>{acceptedMatch.organisation.phone}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          <span className="material-symbols-outlined text-[#1B5E20] text-xl">mail</span>
+                          <span>{acceptedMatch.organisation.email}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* What to Expect */}
+                <div className="p-8 md:p-12">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-6">Wat kun je nu verwachten?</h3>
+                  <div className="space-y-6 mb-10">
+                    <div className="flex items-start gap-4">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-[#1B5E20] text-xs font-bold">1</span>
+                      </div>
+                      <p className="text-gray-600">Binnen 2 werkdagen neemt een vaste begeleider contact met je op voor een kennismaking.</p>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-[#1B5E20] text-xs font-bold">2</span>
+                      </div>
+                      <p className="text-gray-600">Samen maken jullie een plan van aanpak dat past bij jouw persoonlijke situatie.</p>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-[#1B5E20] text-xs font-bold">3</span>
+                      </div>
+                      <p className="text-gray-600">Je kunt altijd contact opnemen als je vragen hebt of extra hulp nodig hebt.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <a
+                      href={`mailto:${acceptedMatch.organisation.email}`}
+                      className="bg-[#8ce830] hover:bg-[#76c428] text-[#1B5E20] font-extrabold px-10 py-4 rounded-full shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined">send</span>
+                      Stuur een bericht
+                    </a>
+                    {acceptedMatch.organisation.phone && (
+                      <a
+                        href={`tel:${acceptedMatch.organisation.phone}`}
+                        className="border-2 border-gray-100 hover:border-gray-200 text-gray-500 font-bold px-10 py-4 rounded-full transition-all text-center"
+                      >
+                        Bel de organisatie
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </>
+      )}
+
+      {/* Matches View (not yet accepted) */}
+      {status && !acceptedMatch && hasMatches && (
+        <>
+          <header className="bg-[#E8F5E9] pt-32 pb-20 px-6" style={{ borderBottomLeftRadius: "40px", borderBottomRightRadius: "40px" }}>
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="font-display font-bold text-4xl md:text-5xl text-[#1B3022] mb-4">
+                Dit zijn jouw matches, {status.name}
+              </h1>
+              <p className="text-lg md:text-xl text-[#1B3022]/80 font-medium max-w-2xl mx-auto">
+                We hebben organisaties gevonden die je direct kunnen ondersteunen bij jouw vraag.
+              </p>
+            </div>
+          </header>
+
+          <main className="max-w-4xl mx-auto px-6 -mt-10 pb-20">
+            {/* Timer Banner */}
+            <div className="bg-white/90 border border-[#8ce830]/20 rounded-2xl p-4 mb-8 flex items-center justify-center gap-3 shadow-sm">
+              <span className="material-symbols-outlined text-[#76c428]">timer</span>
+              <p className="text-[#1B3022] font-medium">
+                Deze matches zijn nog <span className="font-bold underline decoration-[#8ce830] decoration-2">48 uur geldig</span>. Neem tijdig contact op.
+              </p>
+            </div>
+
+            {/* Match Cards */}
+            <div className="flex flex-col gap-8">
+              {status.matches.map((match) => (
+                <div
+                  key={match.id}
+                  className={`bg-white rounded-3xl p-8 shadow-[0_10px_30px_-5px_rgba(140,232,48,0.12)] border border-[#E8F5E9] flex flex-col md:flex-row gap-8 items-start md:items-center relative overflow-hidden group ${
+                    match.status === "expired" || match.status === "rejected" ? "opacity-60" : ""
+                  }`}
+                >
+                  {/* Green side accent */}
+                  <div className={`absolute top-0 left-0 w-2 h-full transition-all group-hover:w-3 ${
+                    match.status === "rejected" ? "bg-red-400" : match.status === "expired" ? "bg-gray-300" : "bg-[#8ce830]"
+                  }`} />
+
+                  <div className="flex-1 pl-4">
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                      <h2 className="font-display font-bold text-2xl text-[#1B3022]">
+                        {match.organisation.name}
+                      </h2>
+                      {match.organisation.is_verified && (
+                        <div className="flex items-center gap-1.5 bg-[#E8F5E9] text-[#1B3022] px-3 py-1 rounded-full text-xs font-bold border border-[#8ce830]/10">
+                          <span className="material-symbols-outlined text-sm text-[#76c428] font-bold">verified</span>
+                          Konsensi Geverifieerd
+                        </div>
+                      )}
+                      {match.status === "rejected" && (
+                        <span className="text-xs font-bold text-red-500 bg-red-50 px-3 py-1 rounded-full">Afgewezen</span>
+                      )}
+                      {match.status === "expired" && (
+                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Verlopen</span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-3 mb-6">
+                      <div className="flex items-center gap-2 text-[#1B3022]/70">
+                        <span className="material-symbols-outlined text-lg">schedule</span>
+                        <span className="text-sm font-semibold">
+                          Verwachte wachttijd:{" "}
+                          <span className="text-[#1B3022]">
+                            {match.organisation.estimated_wait_days <= 1
+                              ? "Direct beschikbaar"
+                              : `${match.organisation.estimated_wait_days} werkdagen`}
+                          </span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[#1B3022]/70">
+                        <span className="material-symbols-outlined text-lg">location_on</span>
+                        <span className="text-sm font-semibold">{match.organisation.gemeente}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {match.status === "pending" && (
+                    <div className="w-full md:w-auto">
+                      <span className="w-full md:min-w-[260px] bg-[#8ce830]/20 text-[#1B3022] font-bold py-4 px-6 rounded-full flex items-center justify-center gap-2 text-sm">
+                        <span className="material-symbols-outlined text-xl animate-pulse">hourglass_top</span>
+                        Wacht op reactie organisatie
+                      </span>
+                    </div>
+                  )}
+
+                  {match.status === "accepted" && (
+                    <div className="w-full md:w-auto">
+                      <a
+                        href={`mailto:${match.organisation.email}`}
+                        className="w-full md:min-w-[260px] bg-[#8ce830] hover:bg-[#76c428] transition-all text-[#1B3022] font-bold py-4 px-6 rounded-full flex items-center justify-center gap-2 shadow-md"
+                      >
+                        Bekijk profiel &amp; neem contact op
+                        <span className="material-symbols-outlined text-xl">chevron_right</span>
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Help Text */}
+            <div className="mt-16 text-center text-[#1B3022]/60 text-sm max-w-xl mx-auto">
+              <p>
+                Heb je hulp nodig bij het kiezen? Ons support team staat voor je klaar.<br />
+                Neem contact op via <Link href="/faq" className="text-[#76c428] font-bold hover:underline">onze FAQ</Link>.
+              </p>
+            </div>
+          </main>
+        </>
+      )}
+
+      {/* No matches yet */}
+      {status && !acceptedMatch && !hasMatches && (
+        <>
+          <header className="bg-[#E8F5E9] pt-32 pb-20 px-6" style={{ borderBottomLeftRadius: "40px", borderBottomRightRadius: "40px" }}>
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="font-display font-bold text-4xl md:text-5xl text-[#1B3022] mb-4">
+                Hoi {status.name}!
+              </h1>
+              <p className="text-lg md:text-xl text-[#1B3022]/80 font-medium max-w-2xl mx-auto">
+                We zijn nog op zoek naar organisaties in jouw regio. Even geduld...
+              </p>
+            </div>
+          </header>
+
+          <main className="max-w-4xl mx-auto px-6 -mt-10 pb-20">
+            <div className="bg-white rounded-3xl p-12 shadow-lg text-center">
+              <div className="w-20 h-20 bg-[#8ce830]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="material-symbols-outlined text-[#8ce830] text-4xl animate-pulse">radar</span>
+              </div>
+              <h2 className="font-display text-2xl font-bold text-[#1B3022] mb-3">Radar scant...</h2>
+              <p className="text-[#1B3022]/60 max-w-md mx-auto mb-8">
+                We zijn bezig met het vinden van de beste organisaties voor jouw situatie. Je ontvangt automatisch een e-mail zodra er matches zijn.
+              </p>
+              <button
+                onClick={fetchStatus}
+                disabled={loading}
+                className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#1B5E20] font-bold px-8 py-3 rounded-full hover:bg-[#d4eed6] transition-all"
+              >
+                <span className={`material-symbols-outlined text-lg ${loading ? "animate-spin" : ""}`}>refresh</span>
+                Vernieuwen
+              </button>
+            </div>
+          </main>
+        </>
+      )}
 
       <Footer />
+
+      {/* Material Symbols */}
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     </div>
   );
 }
