@@ -29,7 +29,7 @@ export function Footer() {
               <li><Link className="hover:text-primary transition-colors" href="/hoe-het-werkt">Hoe het werkt</Link></li>
               <li><Link className="hover:text-primary transition-colors" href="/over-ons">Over ons</Link></li>
               <li><a className="hover:text-primary transition-colors" href="/#hulpverleners">Hulpverleners</a></li>
-              <li><a className="hover:text-primary transition-colors" href="#">Veelgestelde vragen</a></li>
+              <li><Link className="hover:text-primary transition-colors" href="/faq">Veelgestelde vragen</Link></li>
             </ul>
           </div>
 
