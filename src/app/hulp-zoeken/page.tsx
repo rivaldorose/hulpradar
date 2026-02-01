@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 
 // ──────────────── Step 1: Form ────────────────
-function StepForm({ onSubmit, initialWoonplaats = "" }: { onSubmit: (data: FormData) => void; initialWoonplaats?: string }) {
+function StepForm({ onSubmit, initialWoonplaats = "", error = "" }: { onSubmit: (data: FormData) => void; initialWoonplaats?: string; error?: string }) {
   const [name, setName] = useState("");
   const [postcode, setPostcode] = useState("");
   const [woonplaats, setWoonplaats] = useState(initialWoonplaats);
@@ -135,6 +135,13 @@ function StepForm({ onSubmit, initialWoonplaats = "" }: { onSubmit: (data: FormD
             </p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-2xl text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Submit Button */}
           <div className="mt-4">
             <button
@@ -232,7 +239,7 @@ function StepRadar({ onComplete }: { onComplete: () => void }) {
 }
 
 // ──────────────── Step 3: Confirmation ────────────────
-function StepConfirmation() {
+function StepConfirmation({ helpRequestId }: { helpRequestId: string | null }) {
   return (
     <main className="flex-grow flex items-center justify-center px-4 py-12">
       <div className="max-w-[720px] w-full flex flex-col items-center bg-white p-8 md:p-16 rounded-xl shadow-sm border border-gray-100">
@@ -279,12 +286,21 @@ function StepConfirmation() {
             <span className="text-forest-green font-medium">Controleer straks je inbox voor updates</span>
           </div>
 
-          <Link
-            href="/"
-            className="flex min-w-[240px] cursor-pointer items-center justify-center rounded-full h-14 px-8 bg-primary text-white text-lg font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
-          >
-            Terug naar home
-          </Link>
+          {helpRequestId ? (
+            <Link
+              href={`/status/${helpRequestId}`}
+              className="flex min-w-[240px] cursor-pointer items-center justify-center rounded-full h-14 px-8 bg-primary text-white text-lg font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              Bekijk je status
+            </Link>
+          ) : (
+            <Link
+              href="/"
+              className="flex min-w-[240px] cursor-pointer items-center justify-center rounded-full h-14 px-8 bg-primary text-white text-lg font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              Terug naar home
+            </Link>
+          )}
         </div>
 
         {/* Loading dots */}
@@ -313,10 +329,41 @@ function HulpZoekenContent() {
   const searchParams = useSearchParams();
   const initialWoonplaats = searchParams.get("woonplaats") || "";
   const [step, setStep] = useState(1);
+  const [submitError, setSubmitError] = useState("");
+  const [helpRequestId, setHelpRequestId] = useState<string | null>(null);
 
-  const handleFormSubmit = (_data: FormData) => {
-    // TODO: Send data to API
-    setStep(2);
+  const handleFormSubmit = async (data: FormData) => {
+    setSubmitError("");
+    setStep(2); // Show radar animation immediately
+
+    try {
+      const response = await fetch("/api/help-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name || "Anoniem",
+          email: data.email,
+          phone: data.phone || null,
+          contact_preference: "email",
+          postcode: data.postcode,
+          gemeente: data.woonplaats,
+          situation: data.situation,
+          source: "website",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Er ging iets mis");
+      }
+
+      setHelpRequestId(result.help_request_id);
+    } catch (error) {
+      console.error("Error submitting help request:", error);
+      setSubmitError(error instanceof Error ? error.message : "Er ging iets mis. Probeer het opnieuw.");
+      setStep(1); // Go back to form on error
+    }
   };
 
   const handleRadarComplete = () => {
@@ -326,9 +373,9 @@ function HulpZoekenContent() {
   return (
     <>
       <div className="pt-24 flex-1 flex flex-col">
-        {step === 1 && <StepForm onSubmit={handleFormSubmit} initialWoonplaats={initialWoonplaats} />}
+        {step === 1 && <StepForm onSubmit={handleFormSubmit} initialWoonplaats={initialWoonplaats} error={submitError} />}
         {step === 2 && <StepRadar onComplete={handleRadarComplete} />}
-        {step === 3 && <StepConfirmation />}
+        {step === 3 && <StepConfirmation helpRequestId={helpRequestId} />}
       </div>
 
       {/* Simple Footer */}

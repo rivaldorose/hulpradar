@@ -14,6 +14,7 @@ interface MatchWithOrg {
   status: string;
   priority: number;
   responded_at: string | null;
+  expires_at: string;
   organisation_id: string;
   organisations: {
     id: string;
@@ -28,7 +29,7 @@ interface MatchWithOrg {
 }
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -58,6 +59,7 @@ export async function GET(
         status,
         priority,
         responded_at,
+        expires_at,
         organisation_id,
         organisations (
           id,
@@ -78,8 +80,23 @@ export async function GET(
       console.error("Error fetching matches:", matchesError);
     }
 
+    // Auto-expire pending matches that have passed their expires_at
+    const now = new Date();
+    const typedMatches = (matches || []) as unknown as MatchWithOrg[];
+
+    for (const match of typedMatches) {
+      if (match.status === "pending" && match.expires_at && new Date(match.expires_at) < now) {
+        // Update to expired
+        await supabase
+          .from("matches")
+          .update({ status: "expired" })
+          .eq("id", match.id);
+        match.status = "expired";
+      }
+    }
+
     // Format the response
-    const formattedMatches = ((matches || []) as unknown as MatchWithOrg[]).map((match) => {
+    const formattedMatches = typedMatches.map((match) => {
       const org = match.organisations;
 
       return {

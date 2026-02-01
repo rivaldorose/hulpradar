@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendAcceptedEmail } from "@/lib/email";
 
 function getAdminClient() {
   return createClient(
@@ -73,8 +74,31 @@ export async function POST(
       .update({ status: "accepted" })
       .eq("id", helpRequestId);
 
-    // TODO: Create conversation for chat
-    // TODO: Send notification to help seeker
+    // Get help request and organisation details for email
+    const { data: helpRequest } = await supabase
+      .from("help_requests")
+      .select("name, email")
+      .eq("id", helpRequestId)
+      .single();
+
+    const { data: organisation } = await supabase
+      .from("organisations")
+      .select("name, email, phone, gemeente")
+      .eq("id", organisation_id)
+      .single();
+
+    // Send acceptance email to help seeker
+    if (helpRequest?.email && organisation) {
+      sendAcceptedEmail(helpRequest.email, {
+        name: helpRequest.name || "Anoniem",
+        organisationName: organisation.name,
+        organisationEmail: organisation.email,
+        organisationPhone: organisation.phone,
+        organisationGemeente: organisation.gemeente,
+        helpRequestId,
+        note: note || null,
+      }).catch((err) => console.error("Failed to send acceptance email:", err));
+    }
 
     return NextResponse.json({
       success: true,

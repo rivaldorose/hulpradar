@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { findMatches, createMatches } from "@/lib/matching";
+import {
+  sendConfirmationEmail,
+  sendMatchFoundEmail,
+  sendNewRequestToOrganisation,
+} from "@/lib/email";
 
 // Create admin client for server-side operations
 function getAdminClient() {
@@ -21,30 +26,23 @@ export async function POST(request: NextRequest) {
       contact_preference,
       postcode,
       gemeente,
+      situation,
       source = "website",
       source_organisation_id,
       konsensi_user_id,
     } = body;
 
     // Validation
-    if (!name || !postcode || !gemeente) {
+    if (!postcode || !gemeente) {
       return NextResponse.json(
-        { error: "Naam, postcode en gemeente zijn verplicht" },
+        { error: "Postcode en gemeente zijn verplicht" },
         { status: 400 }
       );
     }
 
-    // Validate contact preference and corresponding field
-    if (contact_preference === "email" && !email) {
+    if (!email) {
       return NextResponse.json(
-        { error: "E-mailadres is verplicht voor e-mail contact" },
-        { status: 400 }
-      );
-    }
-
-    if (contact_preference === "sms" && !phone) {
-      return NextResponse.json(
-        { error: "Telefoonnummer is verplicht voor SMS contact" },
+        { error: "E-mailadres is verplicht" },
         { status: 400 }
       );
     }
@@ -53,12 +51,13 @@ export async function POST(request: NextRequest) {
 
     // Create the help request
     const helpRequestData = {
-      name,
+      name: name || "Anoniem",
       email: email || null,
       phone: phone || null,
       contact_preference: contact_preference || "email",
       postcode: postcode.toUpperCase().replace(/\s/g, ""),
       gemeente,
+      situation: situation || null,
       source,
       source_organisation_id: source_organisation_id || null,
       konsensi_user_id: konsensi_user_id || null,
@@ -79,13 +78,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Send confirmation email to help seeker
+    if (email) {
+      sendConfirmationEmail(email, {
+        name: name || "Anoniem",
+        helpRequestId: helpRequest.id,
+      }).catch((err) => console.error("Failed to send confirmation email:", err));
+    }
+
     // Find matching organisations
     let matchedOrganisations: Awaited<ReturnType<typeof findMatches>> = [];
     try {
       matchedOrganisations = await findMatches(gemeente, postcode);
     } catch (matchError) {
       console.error("Error finding matches:", matchError);
-      // Still return success - we can find matches later
       matchedOrganisations = [];
     }
 
@@ -102,6 +108,33 @@ export async function POST(request: NextRequest) {
             matched_at: new Date().toISOString(),
           })
           .eq("id", helpRequest.id);
+
+        // Send "matches found" email to help seeker
+        if (email) {
+          sendMatchFoundEmail(email, {
+            name: name || "Anoniem",
+            helpRequestId: helpRequest.id,
+            matchCount: matchedOrganisations.length,
+          }).catch((err) => console.error("Failed to send match found email:", err));
+        }
+
+        // Send notification emails to each matched organisation
+        for (let i = 0; i < matchedOrganisations.length; i++) {
+          const org = matchedOrganisations[i];
+          if (org.email) {
+            sendNewRequestToOrganisation(org.email, {
+              organisationName: org.name,
+              helpSeekerName: name || "Anoniem",
+              gemeente,
+              situation: situation || "",
+              helpRequestId: helpRequest.id,
+              priority: i + 1,
+              expiresInHours: 48,
+            }).catch((err) =>
+              console.error(`Failed to send notification to ${org.name}:`, err)
+            );
+          }
+        }
       } catch (createMatchError) {
         console.error("Error creating matches:", createMatchError);
       }
@@ -112,9 +145,6 @@ export async function POST(request: NextRequest) {
         .update({ status: "pending" })
         .eq("id", helpRequest.id);
     }
-
-    // TODO: Send notification emails to matched organisations
-    // TODO: Send confirmation email to help seeker
 
     return NextResponse.json({
       success: true,
