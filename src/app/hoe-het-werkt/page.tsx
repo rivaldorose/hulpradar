@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 
 export const metadata = {
   title: "Hoe Werkt Het - Stappenplan | HulpRadar",
-  description: "In drie simpele stappen van zorgen naar een oplossing. Volledig anoniem en gratis.",
+  description: "Ontdek hoe HulpRadar werkt. In drie simpele stappen van zorgen naar een oplossing. Volledig anoniem en gratis.",
 };
 
 export default function HoeHetWerktPage() {
@@ -24,20 +24,56 @@ export default function HoeHetWerktPage() {
           </div>
         </section>
 
-        {/* Step 1: Privacy */}
-        <section className="bg-white py-24 md:py-32 overflow-hidden border-t border-[#f2f4f0]">
+        {/* Wat is HulpRadar - Intro Section */}
+        <section className="bg-white py-24 md:py-32 border-t border-[#f2f4f0]">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col md:flex-row items-center gap-16 md:gap-24">
               <div className="w-full md:w-1/2">
                 <div className="relative">
-                  <span className="absolute -top-20 -left-10 text-[180px] font-black opacity-[0.05] pointer-events-none select-none">01</span>
-                  <div className="absolute -top-6 -left-6 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
+                  <div className="absolute -top-6 -left-6 w-40 h-40 bg-primary/15 rounded-full blur-3xl"></div>
                   <div
                     className="w-full aspect-[4/3] bg-cover bg-center rounded-xl shadow-2xl relative z-10"
-                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA-hg1Z12CzEiwYcoN-z0pq3wDXlMq0AX2Mew1ccfAIhvDZhbYcvrZhfadJFtFYSj2TdOeRMpN38P8_GaVlGeHjt5SM4xp8VEftcS4EXOnPfxAQpkTiNthvOQicVlekKs_U4xUDB8yx-9JRcrJ_h_-8EtLFg07MWHIe6Z8_iKn4T_VOY7ocrqIQr4H0EomhWpTT1x7qbVby9IQM1LZdNcfEEQKcSWFU2gRzfCgWfxipKAT_dm19PWcMGPQ9CMKZmy6pUx0ijNyDRA')" }}
+                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBQWLY2fk_D85QkPw432r_or1ftKet5UM92g4w-l0qGZUHlTQlzXZdLZLrZld2MiGFm_GCLyILS0AXOc-edH_bsQDXwRteEw_JdgltQswEOZn0rV_E0gO-nvfPDMG5II8CslvjYJD8e63D3GsRW37zh0M0G-kGDLSYGxWIu7D-jU1Axz4r4lYe8MyADOb8OqlrlTeIHTPwy2RbTuRSI6JY04VKrsU8YhcCwj-AE59yYWhVyikvhBSNJp4Nl3gnZsaIe0iCYO5dK-A')" }}
                   />
                 </div>
               </div>
+              <div className="w-full md:w-1/2 flex flex-col gap-6">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-forest-green text-xs font-bold uppercase tracking-widest w-fit">
+                  <span className="material-symbols-outlined text-sm">radar</span>
+                  Wat is HulpRadar?
+                </div>
+                <h2 className="text-4xl md:text-5xl font-extrabold leading-[1.15] tracking-tight text-forest-green">
+                  Jouw radar voor schuldhulp.
+                </h2>
+                <p className="text-lg text-[#758961] leading-relaxed">
+                  HulpRadar is een gratis platform dat jongeren met geldzorgen verbindt met de juiste hulporganisaties. Of je nu schulden hebt, moeite hebt met rondkomen of gewoon advies wilt — wij helpen je de eerste stap te zetten.
+                </p>
+                <p className="text-lg text-[#758961] leading-relaxed">
+                  Je hoeft geen account aan te maken en je gegevens blijven anoniem. Vul simpelweg in waar je hulp bij nodig hebt, in welke gemeente je woont, en wij matchen je met een geverifieerde hulporganisatie bij jou in de buurt.
+                </p>
+                <div className="grid grid-cols-3 gap-6 pt-4">
+                  <div className="text-center">
+                    <p className="text-3xl font-extrabold text-forest-green">100%</p>
+                    <p className="text-sm text-[#758961] font-medium mt-1">Gratis</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-extrabold text-forest-green">150+</p>
+                    <p className="text-sm text-[#758961] font-medium mt-1">Organisaties</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-extrabold text-forest-green">&lt; 24u</p>
+                    <p className="text-sm text-[#758961] font-medium mt-1">Reactietijd</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Step 1: Privacy */}
+        <section className="bg-background-light py-24 md:py-32 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col-reverse md:flex-row items-center gap-16 md:gap-24">
               <div className="w-full md:w-1/2 flex flex-col gap-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-forest-green text-xs font-bold uppercase tracking-widest w-fit">
                   <span className="material-symbols-outlined text-sm">lock</span>
@@ -70,6 +106,16 @@ export default function HoeHetWerktPage() {
                   </li>
                 </ul>
               </div>
+              <div className="w-full md:w-1/2">
+                <div className="relative">
+                  <span className="absolute -top-20 -right-10 text-[180px] font-black opacity-[0.05] pointer-events-none select-none">01</span>
+                  <div className="absolute -top-6 -right-6 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
+                  <div
+                    className="w-full aspect-[4/3] bg-cover bg-center rounded-xl shadow-2xl relative z-10"
+                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA-hg1Z12CzEiwYcoN-z0pq3wDXlMq0AX2Mew1ccfAIhvDZhbYcvrZhfadJFtFYSj2TdOeRMpN38P8_GaVlGeHjt5SM4xp8VEftcS4EXOnPfxAQpkTiNthvOQicVlekKs_U4xUDB8yx-9JRcrJ_h_-8EtLFg07MWHIe6Z8_iKn4T_VOY7ocrqIQr4H0EomhWpTT1x7qbVby9IQM1LZdNcfEEQKcSWFU2gRzfCgWfxipKAT_dm19PWcMGPQ9CMKZmy6pUx0ijNyDRA')" }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -77,7 +123,17 @@ export default function HoeHetWerktPage() {
         {/* Step 2: Kwaliteitscheck */}
         <section className="bg-[#E8F5E9] py-24 md:py-32 overflow-hidden">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col-reverse md:flex-row items-center gap-16 md:gap-24">
+            <div className="flex flex-col md:flex-row items-center gap-16 md:gap-24">
+              <div className="w-full md:w-1/2 relative">
+                <span className="absolute -top-20 -left-10 text-[180px] font-black opacity-[0.05] pointer-events-none select-none">02</span>
+                <div className="relative z-10">
+                  <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-primary/10 rounded-full blur-3xl"></div>
+                  <div
+                    className="w-full aspect-[4/3] bg-cover bg-center rounded-xl shadow-2xl"
+                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDINOXDfWvk82vsP4GJ3YfKY1Wqw4e_8_0lmxGqX6wRr5AacwBxVGCuMrjDKrqiaofwea3-K3L3ARuXlhHN5uUeTZzIK1SvYfpR7LqDNe6gQ0g06J5B1Vwm2WlInLq4Rry7wEJYNU-mA8RiuObZUTOdEfAjJvwS0ALZpntQPaoZfAqdsxOAeA3gR4GS-SOb3hPNG23LU5P4VGjcGuKK4A_pRYI8kSTe-iP5Qz-0wbjlp3vskopi586KdnqTH8wc_tQUtm7QbqF7Ew')" }}
+                  />
+                </div>
+              </div>
               <div className="w-full md:w-1/2 flex flex-col gap-8">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white text-forest-green text-xs font-bold uppercase tracking-widest w-fit shadow-sm">
                   <span className="material-symbols-outlined text-sm">verified_user</span>
@@ -100,16 +156,6 @@ export default function HoeHetWerktPage() {
                     <h4 className="font-bold mb-1">Direct contact</h4>
                     <p className="text-sm text-[#758961]">Korte lijnen naar gecertificeerde professionals.</p>
                   </div>
-                </div>
-              </div>
-              <div className="w-full md:w-1/2 relative">
-                <span className="absolute -top-20 -right-10 text-[180px] font-black opacity-[0.05] pointer-events-none select-none">02</span>
-                <div className="relative z-10">
-                  <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-primary/10 rounded-full blur-3xl"></div>
-                  <div
-                    className="w-full aspect-[4/3] bg-cover bg-center rounded-xl shadow-2xl"
-                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDINOXDfWvk82vsP4GJ3YfKY1Wqw4e_8_0lmxGqX6wRr5AacwBxVGCuMrjDKrqiaofwea3-K3L3ARuXlhHN5uUeTZzIK1SvYfpR7LqDNe6gQ0g06J5B1Vwm2WlInLq4Rry7wEJYNU-mA8RiuObZUTOdEfAjJvwS0ALZpntQPaoZfAqdsxOAeA3gR4GS-SOb3hPNG23LU5P4VGjcGuKK4A_pRYI8kSTe-iP5Qz-0wbjlp3vskopi586KdnqTH8wc_tQUtm7QbqF7Ew')" }}
-                  />
                 </div>
               </div>
             </div>
