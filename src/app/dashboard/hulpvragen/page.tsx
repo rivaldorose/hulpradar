@@ -24,7 +24,7 @@ export default async function HulpvragenPage() {
     .eq("user_id", user.id)
     .single();
 
-  const organisation = orgUserData?.organisations as { name: string } | null;
+  const organisation = orgUserData?.organisations as unknown as { name: string } | null;
   const orgId = orgUserData?.organisation_id;
 
   if (!orgId) return null;
