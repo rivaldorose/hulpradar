@@ -5,6 +5,7 @@ import MatchFoundEmail from "../../emails/match-found";
 import NewRequestOrganisationEmail from "../../emails/new-request-organisation";
 import AcceptedOrgEmail from "../../emails/accepted";
 import AcceptedSeekerEmail from "../../emails/accepted-seeker";
+import NewOrganisationAdminEmail from "../../emails/new-organisation-admin";
 
 // Lazy initialization to prevent build errors when env var is not set
 let _resend: Resend | null = null;
@@ -18,6 +19,7 @@ function getResend() {
 }
 
 const FROM_EMAIL = "HulpRadar <hulpradar@konsensi-budgetbeheer.nl>";
+const ADMIN_EMAIL = "rivaldo.mac-andrew@konsensi-budgetbeheer.nl";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://hulpradar.konsensi-budgetbeheer.nl";
 
 // ──────────────── 1. Bevestiging naar hulpzoekende ────────────────
@@ -171,6 +173,45 @@ export async function sendAcceptedToSeeker(to: string, data: {
     return { success: true };
   } catch (error) {
     console.error("[Email] Failed to send acceptance to seeker:", error);
+    return { success: false, error };
+  }
+}
+
+// ──────────────── 6. Admin notificatie: nieuwe organisatie aanmelding ────────────────
+
+export async function sendNewOrganisationNotification(data: {
+  organisatienaam: string;
+  contactNaam: string;
+  email: string;
+  telefoon: string;
+  specialisaties: string[];
+  gemeenten: string;
+  kvkNummer?: string;
+  website?: string;
+}) {
+  try {
+    const html = await render(NewOrganisationAdminEmail({
+      organisatienaam: data.organisatienaam,
+      contactNaam: data.contactNaam,
+      email: data.email,
+      telefoon: data.telefoon,
+      specialisaties: data.specialisaties,
+      gemeenten: data.gemeenten,
+      kvkNummer: data.kvkNummer,
+      website: data.website,
+      appUrl: APP_URL,
+    }));
+
+    await getResend().emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject: "Nieuwe organisatie aanmelding — HulpRadar",
+      html,
+    });
+    console.log(`[Email] Admin notification sent for new org: ${data.organisatienaam}`);
+    return { success: true };
+  } catch (error) {
+    console.error("[Email] Failed to send admin notification:", error);
     return { success: false, error };
   }
 }

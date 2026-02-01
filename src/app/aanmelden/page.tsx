@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Header } from "@/components/layout/Header";
 
@@ -568,35 +567,24 @@ export default function AanmeldenPage() {
     setIsSubmitting(true);
 
     try {
-      const supabase = createClient();
-
-      // Create a slug from organisation name
-      const slug = stepOneData.organisatienaam
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-
-      // Create the organisation in Supabase
-      const { data: org, error: orgError } = await supabase
-        .from("organisations")
-        .insert({
-          name: stepOneData.organisatienaam,
-          slug,
-          email: data.email,
-          kvk_number: stepOneData.kvkNummer,
-          website: stepOneData.website ? `https://${stepOneData.website}` : null,
+      const res = await fetch("/api/organisation-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organisatienaam: stepOneData.organisatienaam,
+          kvkNummer: stepOneData.kvkNummer,
+          website: stepOneData.website,
           specialisaties: stepTwoData.specialisaties,
-          gemeente: stepTwoData.gemeenten.join(", "),
-          contact_naam: data.contactNaam,
-          contact_email: data.email,
-          contact_telefoon: data.telefoon,
-          status: "pending_verification",
-        })
-        .select()
-        .single();
+          gemeenten: stepTwoData.gemeenten,
+          contactNaam: data.contactNaam,
+          email: data.email,
+          telefoon: data.telefoon,
+        }),
+      });
 
-      if (orgError) {
-        console.error("Error creating organisation:", orgError);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Error creating organisation:", errorData);
         toast.error("Er is iets misgegaan. Probeer het opnieuw.");
         setIsSubmitting(false);
         return;

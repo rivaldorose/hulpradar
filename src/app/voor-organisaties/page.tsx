@@ -175,43 +175,35 @@ export default function VoorOrganisatiesPage() {
                 </div>
               </div>
 
-              <div className="bg-white p-8 rounded-[24px] shadow-2xl">
-                <form className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-bold text-forest-green mb-1">Organisatienaam</label>
-                    <input
-                      className="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary py-3 px-4"
-                      placeholder="Bijv. Stichting Jeugd"
-                      type="text"
-                    />
+              <div className="bg-white p-8 rounded-[24px] shadow-2xl text-center">
+                <h3 className="font-heading text-2xl font-bold text-forest-green mb-3">Direct aanmelden</h3>
+                <p className="text-forest-green/60 text-sm mb-8">
+                  In 3 eenvoudige stappen meld je jouw organisatie aan op HulpRadar. Het is volledig gratis.
+                </p>
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center gap-4 text-left">
+                    <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-forest-green font-bold">1</div>
+                    <p className="text-sm font-medium">Vul organisatiegegevens in</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-forest-green mb-1">E-mailadres</label>
-                    <input
-                      className="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary py-3 px-4"
-                      placeholder="info@organisatie.nl"
-                      type="email"
-                    />
+                  <div className="flex items-center gap-4 text-left">
+                    <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-forest-green font-bold">2</div>
+                    <p className="text-sm font-medium">Selecteer expertise &amp; regio</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-forest-green mb-1">Type organisatie</label>
-                    <select className="w-full rounded-xl border-gray-200 focus:ring-primary focus:border-primary py-3 px-4">
-                      <option>Welzijnsorganisatie</option>
-                      <option>Zorginstelling</option>
-                      <option>Vrijwilligersorganisatie</option>
-                      <option>Anders</option>
-                    </select>
+                  <div className="flex items-center gap-4 text-left">
+                    <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-forest-green font-bold">3</div>
+                    <p className="text-sm font-medium">Contactpersoon &amp; afronden</p>
                   </div>
-                  <button
-                    type="button"
-                    className="w-full bg-primary hover:bg-[#72d411] text-forest-green font-bold py-4 rounded-xl text-lg transition-all mt-4"
-                  >
-                    Start gratis aanmelding
-                  </button>
-                  <p className="text-[10px] text-center text-gray-400 mt-4">
-                    Door aan te melden gaat u akkoord met onze Algemene Voorwaarden.
-                  </p>
-                </form>
+                </div>
+                <Link
+                  href="/aanmelden"
+                  className="block w-full bg-primary hover:bg-[#72d411] text-forest-green font-bold py-4 rounded-xl text-lg transition-all"
+                >
+                  Start gratis aanmelding
+                </Link>
+                <p className="text-[10px] text-center text-gray-400 mt-4">
+                  Door aan te melden gaat u akkoord met onze{" "}
+                  <Link href="/algemene-voorwaarden" className="underline">Algemene Voorwaarden</Link>.
+                </p>
               </div>
             </div>
           </div>

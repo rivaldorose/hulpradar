@@ -1,7 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
-export default async function ClientenPage() {
+const ITEMS_PER_PAGE = 20;
+
+export default async function ClientenPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; page?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -18,6 +25,9 @@ export default async function ClientenPage() {
 
   const orgId = orgUserData?.organisation_id;
   if (!orgId) return null;
+
+  const searchQuery = params.search || "";
+  const currentPage = Math.max(1, parseInt(params.page || "1"));
 
   // Get all unique clients (help requests that have matches with this org)
   const { data: clientMatches } = await supabase
@@ -79,8 +89,41 @@ export default async function ClientenPage() {
     }
   });
 
-  const clients = Array.from(clientMap.values());
+  let clients = Array.from(clientMap.values());
+
+  // Search filter
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    clients = clients.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.gemeente.toLowerCase().includes(q) ||
+        c.phone.includes(q)
+    );
+  }
+
   const totalClients = clients.length;
+  const totalPages = Math.max(1, Math.ceil(totalClients / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedClients = clients.slice(
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
+  );
+
+  function buildUrl(overrides: Record<string, string | undefined>) {
+    const p = new URLSearchParams();
+    const merged = {
+      search: searchQuery || undefined,
+      page: safePage > 1 ? String(safePage) : undefined,
+      ...overrides,
+    };
+    Object.entries(merged).forEach(([k, v]) => {
+      if (v) p.set(k, v);
+    });
+    const qs = p.toString();
+    return `/dashboard/clienten${qs ? `?${qs}` : ""}`;
+  }
 
   return (
     <>
@@ -93,9 +136,23 @@ export default async function ClientenPage() {
               Cliënten <span className="text-primary/90">Beheer</span>
             </h2>
             <p className="text-[#618964] text-lg mt-4 max-w-2xl font-medium">
-              Centraal overzicht van alle cliënten ondersteund door de organisatie. Beheer contactgegevens en volg actieve dossiers.
+              Centraal overzicht van alle cliënten ondersteund door de organisatie.
             </p>
           </div>
+        </div>
+
+        {/* Search */}
+        <div className="mt-8">
+          <form action="/dashboard/clienten" method="get" className="relative w-full sm:w-80">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#618964]/40 text-lg">search</span>
+            <input
+              name="search"
+              type="text"
+              defaultValue={searchQuery}
+              placeholder="Zoek op naam, email of gemeente..."
+              className="w-full pl-11 pr-4 py-2.5 rounded-full bg-white border border-[#e0e6db] text-sm focus:ring-primary focus:border-primary focus:outline-none"
+            />
+          </form>
         </div>
       </div>
 
@@ -113,8 +170,8 @@ export default async function ClientenPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F0F4F0]">
-              {clients.length > 0 ? (
-                clients.map((client) => {
+              {paginatedClients.length > 0 ? (
+                paginatedClients.map((client) => {
                   const initials = client.name
                     .split(" ")
                     .map((n) => n[0])
@@ -169,14 +226,12 @@ export default async function ClientenPage() {
                         </div>
                       </td>
                       <td className="px-10 py-7 text-right">
-                        <div className="flex justify-end gap-2">
-                          <Link
-                            href={`/dashboard/aanvragen/${client.requestId}`}
-                            className="bg-primary px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/30 transition-all opacity-0 group-hover:opacity-100"
-                          >
-                            Profiel
-                          </Link>
-                        </div>
+                        <Link
+                          href={`/dashboard/aanvragen/${client.requestId}`}
+                          className="bg-primary px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/30 transition-all opacity-0 group-hover:opacity-100"
+                        >
+                          Profiel
+                        </Link>
                       </td>
                     </tr>
                   );
@@ -185,8 +240,16 @@ export default async function ClientenPage() {
                 <tr>
                   <td colSpan={5} className="px-10 py-16 text-center text-[#618964]">
                     <span className="material-symbols-outlined text-4xl mb-4 block opacity-30">people</span>
-                    <p className="font-medium">Nog geen cliënten</p>
-                    <p className="text-sm mt-2">Cliënten verschijnen hier zodra hulpvragen worden geaccepteerd.</p>
+                    <p className="font-medium">
+                      {searchQuery ? `Geen resultaten voor "${searchQuery}"` : "Nog geen cliënten"}
+                    </p>
+                    {searchQuery ? (
+                      <Link href={buildUrl({ search: undefined })} className="text-primary text-sm font-bold mt-2 inline-block hover:underline">
+                        Zoekopdracht wissen
+                      </Link>
+                    ) : (
+                      <p className="text-sm mt-2">Cliënten verschijnen hier zodra hulpvragen worden geaccepteerd.</p>
+                    )}
                   </td>
                 </tr>
               )}
@@ -194,11 +257,59 @@ export default async function ClientenPage() {
           </table>
         </div>
 
-        {clients.length > 0 && (
-          <div className="px-10 py-6 bg-[#F0F4F0]/20 flex items-center justify-between">
+        {/* Pagination */}
+        {totalClients > 0 && (
+          <div className="px-10 py-6 bg-[#F0F4F0]/20 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[11px] text-[#618964] font-bold uppercase tracking-widest">
-              Toon 1 - {clients.length} van de {totalClients} cliënten
+              Toon {(safePage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(safePage * ITEMS_PER_PAGE, totalClients)} van de {totalClients} cliënten
             </p>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                {safePage > 1 && (
+                  <Link
+                    href={buildUrl({ page: String(safePage - 1) })}
+                    className="px-4 py-2 rounded-full bg-white border border-[#e0e6db] text-sm font-bold hover:border-primary transition-colors flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                    Vorige
+                  </Link>
+                )}
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (safePage <= 3) {
+                    pageNum = i + 1;
+                  } else if (safePage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = safePage - 2 + i;
+                  }
+                  return (
+                    <Link
+                      key={pageNum}
+                      href={buildUrl({ page: pageNum > 1 ? String(pageNum) : undefined })}
+                      className={`size-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                        pageNum === safePage
+                          ? "bg-primary text-black"
+                          : "bg-white border border-[#e0e6db] hover:border-primary"
+                      }`}
+                    >
+                      {pageNum}
+                    </Link>
+                  );
+                })}
+                {safePage < totalPages && (
+                  <Link
+                    href={buildUrl({ page: String(safePage + 1) })}
+                    className="px-4 py-2 rounded-full bg-white border border-[#e0e6db] text-sm font-bold hover:border-primary transition-colors flex items-center gap-1"
+                  >
+                    Volgende
+                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

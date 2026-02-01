@@ -10,6 +10,7 @@ const navItems = [
   { label: "Hulpvragen", href: "/dashboard/hulpvragen" },
   { label: "Dossiers", href: "/dashboard/dossiers" },
   { label: "Cliënten", href: "/dashboard/clienten" },
+  { label: "Rapportage", href: "/dashboard/rapportage" },
 ];
 
 interface DashboardNavProps {

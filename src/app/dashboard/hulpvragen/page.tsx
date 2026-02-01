@@ -9,7 +9,14 @@ const statusConfig: Record<string, { label: string; bg: string; text: string; ri
   expired: { label: "Verlopen", bg: "bg-gray-50", text: "text-gray-700", ring: "ring-gray-100" },
 };
 
-export default async function HulpvragenPage() {
+const ITEMS_PER_PAGE = 20;
+
+export default async function HulpvragenPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; search?: string; page?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -24,10 +31,12 @@ export default async function HulpvragenPage() {
     .eq("user_id", user.id)
     .single();
 
-  const organisation = orgUserData?.organisations as unknown as { name: string } | null;
   const orgId = orgUserData?.organisation_id;
-
   if (!orgId) return null;
+
+  const activeFilter = params.status || "alle";
+  const searchQuery = params.search || "";
+  const currentPage = Math.max(1, parseInt(params.page || "1"));
 
   // Get counts per status
   const { count: totalCount } = await supabase
@@ -53,8 +62,8 @@ export default async function HulpvragenPage() {
     .eq("organisation_id", orgId)
     .eq("status", "completed");
 
-  // Get all matches
-  const { data: matches } = await supabase
+  // Build filtered query
+  let query = supabase
     .from("matches")
     .select(`
       id,
@@ -70,8 +79,62 @@ export default async function HulpvragenPage() {
       )
     `)
     .eq("organisation_id", orgId)
-    .order("created_at", { ascending: false })
-    .limit(50);
+    .order("created_at", { ascending: false });
+
+  // Apply status filter
+  if (activeFilter === "wachtend") query = query.eq("status", "pending");
+  else if (activeFilter === "behandeling") query = query.eq("status", "accepted");
+  else if (activeFilter === "afgerond") query = query.eq("status", "completed");
+
+  const { data: allMatches } = await query;
+
+  // Apply search filter (Supabase doesn't support cross-table text search)
+  let filteredMatches = allMatches || [];
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filteredMatches = filteredMatches.filter((match) => {
+      const request = match.help_requests as unknown as {
+        name: string;
+        email: string;
+        gemeente: string;
+      };
+      return (
+        request?.name?.toLowerCase().includes(q) ||
+        request?.email?.toLowerCase().includes(q) ||
+        request?.gemeente?.toLowerCase().includes(q)
+      );
+    });
+  }
+
+  const filteredTotal = filteredMatches.length;
+  const totalPages = Math.max(1, Math.ceil(filteredTotal / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedMatches = filteredMatches.slice(
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE
+  );
+
+  function buildUrl(overrides: Record<string, string | undefined>) {
+    const p = new URLSearchParams();
+    const merged = {
+      status: activeFilter === "alle" ? undefined : activeFilter,
+      search: searchQuery || undefined,
+      page: safePage > 1 ? String(safePage) : undefined,
+      ...overrides,
+    };
+    Object.entries(merged).forEach(([k, v]) => {
+      if (v) p.set(k, v);
+    });
+    const qs = p.toString();
+    return `/dashboard/hulpvragen${qs ? `?${qs}` : ""}`;
+  }
+
+  const filters = [
+    { key: "alle", label: "Alle", count: totalCount || 0 },
+    { key: "wachtend", label: "Wachtend", count: pendingCount || 0 },
+    { key: "behandeling", label: "In behandeling", count: acceptedCount || 0 },
+    { key: "afgerond", label: "Afgerond", count: completedCount || 0 },
+  ];
 
   return (
     <>
@@ -89,20 +152,37 @@ export default async function HulpvragenPage() {
           </div>
         </div>
 
-        {/* Filter Pills */}
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <span className="px-6 py-2.5 rounded-full bg-primary text-black font-bold text-xs shadow-md shadow-primary/20">
-            Alle ({totalCount || 0})
-          </span>
-          <span className="px-6 py-2.5 rounded-full bg-white text-[#618964] font-bold text-xs border border-transparent">
-            Wachtend ({pendingCount || 0})
-          </span>
-          <span className="px-6 py-2.5 rounded-full bg-white text-[#618964] font-bold text-xs border border-transparent">
-            In behandeling ({acceptedCount || 0})
-          </span>
-          <span className="px-6 py-2.5 rounded-full bg-white text-[#618964] font-bold text-xs border border-transparent">
-            Afgerond ({completedCount || 0})
-          </span>
+        {/* Search + Filter Row */}
+        <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          {/* Search */}
+          <form action="/dashboard/hulpvragen" method="get" className="relative w-full sm:w-80">
+            {activeFilter !== "alle" && <input type="hidden" name="status" value={activeFilter} />}
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#618964]/40 text-lg">search</span>
+            <input
+              name="search"
+              type="text"
+              defaultValue={searchQuery}
+              placeholder="Zoek op naam, email of gemeente..."
+              className="w-full pl-11 pr-4 py-2.5 rounded-full bg-white border border-[#e0e6db] text-sm focus:ring-primary focus:border-primary focus:outline-none"
+            />
+          </form>
+
+          {/* Filter Pills */}
+          <div className="flex flex-wrap items-center gap-3">
+            {filters.map((f) => (
+              <Link
+                key={f.key}
+                href={buildUrl({ status: f.key === "alle" ? undefined : f.key, page: undefined })}
+                className={`px-6 py-2.5 rounded-full font-bold text-xs transition-all ${
+                  activeFilter === f.key
+                    ? "bg-primary text-black shadow-md shadow-primary/20"
+                    : "bg-white text-[#618964] border border-transparent hover:border-primary/20"
+                }`}
+              >
+                {f.label} ({f.count})
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -121,8 +201,8 @@ export default async function HulpvragenPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F0F4F0]">
-              {matches && matches.length > 0 ? (
-                matches.map((match) => {
+              {paginatedMatches.length > 0 ? (
+                paginatedMatches.map((match) => {
                   const request = match.help_requests as unknown as {
                     id: string;
                     name: string;
@@ -179,7 +259,14 @@ export default async function HulpvragenPage() {
                 <tr>
                   <td colSpan={6} className="px-10 py-16 text-center text-[#618964]">
                     <span className="material-symbols-outlined text-4xl mb-4 block opacity-30">inbox</span>
-                    <p className="font-medium">Geen hulpvragen gevonden</p>
+                    <p className="font-medium">
+                      {searchQuery ? `Geen resultaten voor "${searchQuery}"` : "Geen hulpvragen gevonden"}
+                    </p>
+                    {searchQuery && (
+                      <Link href={buildUrl({ search: undefined })} className="text-primary text-sm font-bold mt-2 inline-block hover:underline">
+                        Zoekopdracht wissen
+                      </Link>
+                    )}
                   </td>
                 </tr>
               )}
@@ -187,11 +274,59 @@ export default async function HulpvragenPage() {
           </table>
         </div>
 
-        {matches && matches.length > 0 && (
+        {/* Pagination Footer */}
+        {filteredTotal > 0 && (
           <div className="px-10 py-8 bg-[#F0F4F0]/10 flex flex-col sm:flex-row items-center justify-between gap-6">
             <p className="text-[11px] text-[#618964] font-bold uppercase tracking-widest">
-              Toon {matches.length} van de {totalCount || 0} hulpvragen
+              Toon {(safePage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(safePage * ITEMS_PER_PAGE, filteredTotal)} van de {filteredTotal} hulpvragen
             </p>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                {safePage > 1 && (
+                  <Link
+                    href={buildUrl({ page: String(safePage - 1) })}
+                    className="px-4 py-2 rounded-full bg-white border border-[#e0e6db] text-sm font-bold hover:border-primary transition-colors flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                    Vorige
+                  </Link>
+                )}
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (safePage <= 3) {
+                    pageNum = i + 1;
+                  } else if (safePage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = safePage - 2 + i;
+                  }
+                  return (
+                    <Link
+                      key={pageNum}
+                      href={buildUrl({ page: pageNum > 1 ? String(pageNum) : undefined })}
+                      className={`size-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                        pageNum === safePage
+                          ? "bg-primary text-black"
+                          : "bg-white border border-[#e0e6db] hover:border-primary"
+                      }`}
+                    >
+                      {pageNum}
+                    </Link>
+                  );
+                })}
+                {safePage < totalPages && (
+                  <Link
+                    href={buildUrl({ page: String(safePage + 1) })}
+                    className="px-4 py-2 rounded-full bg-white border border-[#e0e6db] text-sm font-bold hover:border-primary transition-colors flex items-center gap-1"
+                  >
+                    Volgende
+                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
