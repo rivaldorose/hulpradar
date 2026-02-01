@@ -73,16 +73,6 @@ export default function HomePage() {
                   height={768}
                 />
 
-                {/* Floating Match Card */}
-                <div className="absolute top-10 -left-8 bg-card p-4 rounded-2xl shadow-soft-green flex items-center gap-4 animate-bounce-slow">
-                  <div className="bg-primary size-10 rounded-full flex items-center justify-center">
-                    <span className="material-symbols-outlined text-white">favorite</span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Hulp Radar</p>
-                    <p className="text-sm font-extrabold">Match gevonden!</p>
-                  </div>
-                </div>
               </div>
 
               {/* Background Decor */}
