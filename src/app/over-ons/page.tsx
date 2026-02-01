@@ -126,7 +126,7 @@ export default function OverOnsPage() {
                   HulpRadar is een trots onderdeel van het Konsensi-ecosysteem. Wij geloven in een holistische benadering van welzijn, waarbij financiële stabiliteit de basis vormt voor persoonlijke groei.
                 </p>
                 <a
-                  href="https://konsensi.nl"
+                  href="https://www.konsensi-budgetbeheer.nl/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex w-fit cursor-pointer items-center justify-center rounded-full h-12 px-10 bg-forest-green text-white font-bold hover:bg-black transition-colors"
