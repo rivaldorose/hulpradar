@@ -11,9 +11,9 @@ export function Header() {
           <Image
             src="/logo-hulpradar.png"
             alt="Konsensi Hulp Radar"
-            width={484}
-            height={484}
-            className="h-12 w-auto object-contain"
+            width={372}
+            height={191}
+            className="h-10 w-auto"
             priority
           />
         </Link>
