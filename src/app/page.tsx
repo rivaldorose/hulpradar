@@ -19,10 +19,9 @@ export default function HomePage() {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      router.push(`/#zoek-hulp?gemeente=${encodeURIComponent(searchQuery)}`);
-      // Scroll to form section
-      const el = document.getElementById("zoek-hulp");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      router.push(`/hulp-zoeken?woonplaats=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push("/hulp-zoeken");
     }
   };
 
@@ -195,12 +194,12 @@ export default function HomePage() {
                 Het kost je niets, behalve een paar minuten van je tijd. We staan voor je klaar.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-                <a
-                  href="#zoek-hulp"
+                <Link
+                  href="/hulp-zoeken"
                   className="bg-forest-green text-white px-10 py-5 rounded-full text-lg font-bold shadow-xl hover:scale-105 transition-transform inline-block"
                 >
                   Ik wil hulp vinden
-                </a>
+                </Link>
                 <Link
                   href="/login"
                   className="bg-white text-forest-green px-10 py-5 rounded-full text-lg font-bold hover:bg-opacity-90 transition-colors inline-block"

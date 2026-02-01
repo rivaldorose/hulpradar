@@ -2,18 +2,21 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 
 // ──────────────── Step 1: Form ────────────────
-function StepForm({ onSubmit }: { onSubmit: (data: FormData) => void }) {
+function StepForm({ onSubmit, initialWoonplaats = "" }: { onSubmit: (data: FormData) => void; initialWoonplaats?: string }) {
   const [name, setName] = useState("");
+  const [postcode, setPostcode] = useState("");
+  const [woonplaats, setWoonplaats] = useState(initialWoonplaats);
   const [situation, setSituation] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, situation, email, phone });
+    onSubmit({ name, postcode, woonplaats, situation, email, phone });
   };
 
   return (
@@ -53,6 +56,39 @@ function StepForm({ onSubmit }: { onSubmit: (data: FormData) => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+          </div>
+
+          {/* Location */}
+          <div className="flex flex-col gap-2">
+            <label className="text-base font-semibold px-2">Waar woon je?</label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-gray-400">location_on</span>
+                <input
+                  className="w-full rounded-full border border-[#dbe6dc] bg-white pl-14 pr-6 h-14 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-gray-400"
+                  placeholder="Postcode (bijv. 1012 AB)"
+                  type="text"
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="relative flex-1">
+                <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-gray-400">apartment</span>
+                <input
+                  className="w-full rounded-full border border-[#dbe6dc] bg-white pl-14 pr-6 h-14 focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-gray-400"
+                  placeholder="Woonplaats (bijv. Amsterdam)"
+                  type="text"
+                  value={woonplaats}
+                  onChange={(e) => setWoonplaats(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1 px-2 flex items-center gap-1">
+              <span className="material-symbols-outlined text-sm">info</span>
+              Op basis van je locatie zoeken we organisaties bij jou in de buurt.
+            </p>
           </div>
 
           {/* Situation */}
@@ -265,6 +301,8 @@ function StepConfirmation() {
 // ──────────────── Types ────────────────
 interface FormData {
   name: string;
+  postcode: string;
+  woonplaats: string;
   situation: string;
   email: string;
   phone: string;
@@ -272,6 +310,8 @@ interface FormData {
 
 // ──────────────── Main Page ────────────────
 export default function HulpZoekenPage() {
+  const searchParams = useSearchParams();
+  const initialWoonplaats = searchParams.get("woonplaats") || "";
   const [step, setStep] = useState(1);
 
   const handleFormSubmit = (_data: FormData) => {
@@ -287,7 +327,7 @@ export default function HulpZoekenPage() {
     <div className="bg-background-light min-h-screen flex flex-col">
       <Header />
       <div className="pt-24 flex-1 flex flex-col">
-        {step === 1 && <StepForm onSubmit={handleFormSubmit} />}
+        {step === 1 && <StepForm onSubmit={handleFormSubmit} initialWoonplaats={initialWoonplaats} />}
         {step === 2 && <StepRadar onComplete={handleRadarComplete} />}
         {step === 3 && <StepConfirmation />}
       </div>
