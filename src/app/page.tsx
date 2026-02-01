@@ -46,7 +46,7 @@ export default function HomePage() {
 
           <div className="flex items-center gap-3">
             <Link href="/login" className="px-6 py-2 text-sm font-bold bg-secondary rounded-full">
-              Inloggen
+              Voor organisaties
             </Link>
             <Link href="#zoek-hulp" className="px-6 py-2 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/20">
               Hulp zoeken
