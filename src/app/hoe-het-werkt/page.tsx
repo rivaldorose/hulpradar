@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
@@ -31,9 +32,12 @@ export default function HoeHetWerktPage() {
               <div className="w-full md:w-1/2">
                 <div className="relative">
                   <div className="absolute -top-6 -left-6 w-40 h-40 bg-primary/15 rounded-full blur-3xl"></div>
-                  <div
-                    className="w-full aspect-[4/3] bg-cover bg-center rounded-xl shadow-2xl relative z-10"
-                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBQWLY2fk_D85QkPw432r_or1ftKet5UM92g4w-l0qGZUHlTQlzXZdLZLrZld2MiGFm_GCLyILS0AXOc-edH_bsQDXwRteEw_JdgltQswEOZn0rV_E0gO-nvfPDMG5II8CslvjYJD8e63D3GsRW37zh0M0G-kGDLSYGxWIu7D-jU1Axz4r4lYe8MyADOb8OqlrlTeIHTPwy2RbTuRSI6JY04VKrsU8YhcCwj-AE59yYWhVyikvhBSNJp4Nl3gnZsaIe0iCYO5dK-A')" }}
+                  <Image
+                    src="/budget-overzicht.jpg"
+                    alt="Budget Overzicht - Hoe werkt de radar"
+                    width={800}
+                    height={600}
+                    className="w-full aspect-[4/3] object-cover rounded-xl shadow-2xl relative z-10"
                   />
                 </div>
               </div>
